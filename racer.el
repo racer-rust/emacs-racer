@@ -3,7 +3,7 @@
 ;; Copyright (c) 2014 Phil Dawes
 
 ;; Author: Phil Dawes
-;; URL: https://github.com/phildawes/racer
+;; URL: https://github.com/racer-rust/emacs-racer
 ;; Version: 0.0.2
 ;; Package-Requires: ((emacs "24.3") (rust-mode "0.2.0") (dash "2.0") (s "1.9.0"))
 ;; Keywords: abbrev, convenience, matching, rust, tools
@@ -63,7 +63,7 @@
 
 (defgroup racer nil
   "Support for Rust completion via racer."
-  :link '(url-link "https://github.com/phildawes/racer/")
+  :link '(url-link "https://github.com/racer-rust/emacs-racer/")
   :group 'rust-mode)
 
 (defcustom racer-cmd
