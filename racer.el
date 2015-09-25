@@ -4,7 +4,7 @@
 
 ;; Author: Phil Dawes
 ;; URL: https://github.com/racer-rust/emacs-racer
-;; Version: 0.0.2
+;; Version: 0.3
 ;; Package-Requires: ((emacs "24.3") (rust-mode "0.2.0") (dash "2.11.0") (s "1.10.0"))
 ;; Keywords: abbrev, convenience, matching, rust, tools
 
