@@ -1,3 +1,7 @@
+# v1.0.2 (unreleased)
+
+Nothing yet.
+
 # v1.0.1
 
 No changes since v0.0.2.
