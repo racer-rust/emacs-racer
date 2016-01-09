@@ -17,3 +17,7 @@ Initial release. Includes:
 * Code completion with company
 * Jump to definition
 * Eldoc
+
+Early users who are using `racer-activate` or `racer-turn-on-eldoc`
+should use `racer-mode` and `eldoc-mode` instead. The former have been
+deprecated.
