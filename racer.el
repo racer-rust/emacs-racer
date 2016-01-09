@@ -101,6 +101,7 @@
       (list (or start (point)) (or end (point))
             (completion-table-dynamic #'racer-complete)
             :annotation-function #'racer-complete--annotation
+            :company-prefix-length #'racer-complete--prefix-p
             :company-docsig #'racer-complete--docsig
             :company-location #'racer-complete--location))))
 
@@ -122,6 +123,10 @@
   (-if-let (idx (s-index-of needle s))
       (substring s (+ idx (length needle)))
     s))
+
+(defun racer-complete--prefix-p (beg end)
+  "Return t if a completion should be triggered for a prefix between BEG and END."
+  (looking-back "\\.\\|::" 2))
 
 (defun racer-complete--annotation (arg)
   "Return an annotation for completion candidate ARG."
@@ -223,7 +228,7 @@ foo(bar, |baz); -> foo|(bar, baz);"
   :keymap racer-mode-map
   (setq-local eldoc-documentation-function #'racer-eldoc)
   (make-local-variable 'completion-at-point-functions)
-  (add-to-list 'completion-at-point-functions #'racer-complete-at-point))
+  (add-hook 'completion-at-point-functions #'racer-complete-at-point))
 
 (define-obsolete-function-alias 'racer-turn-on-eldoc 'eldoc-mode)
 (define-obsolete-function-alias 'racer-activate 'racer-mode)
