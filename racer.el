@@ -126,7 +126,9 @@
 
 (defun racer-complete--prefix-p (beg end)
   "Return t if a completion should be triggered for a prefix between BEG and END."
-  (looking-back "\\.\\|::" 2))
+  (save-excursion
+    (goto-char beg)
+    (looking-back "\\.\\|::" 2)))
 
 (defun racer-complete--annotation (arg)
   "Return an annotation for completion candidate ARG."
