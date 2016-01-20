@@ -97,11 +97,13 @@
 (defun racer-complete-at-point ()
   "Complete the symbol at point."
   (unless (nth 3 (syntax-ppss)) ;; not in string
-    (-let [(start . end) (bounds-of-thing-at-point 'symbol)]
-      (list (or start (point)) (or end (point))
+    (let* ((bounds (bounds-of-thing-at-point 'symbol))
+           (beg (or (car bounds) (point)))
+           (end (or (cdr bounds) (point))))
+      (list beg end
             (completion-table-dynamic #'racer-complete)
             :annotation-function #'racer-complete--annotation
-            :company-prefix-length #'racer-complete--prefix-p
+            :company-prefix-length (racer-complete--prefix-p beg end)
             :company-docsig #'racer-complete--docsig
             :company-location #'racer-complete--location))))
 
