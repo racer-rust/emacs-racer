@@ -45,3 +45,5 @@ This package allows emacs to use [Racer](http://github.com/phildawes/racer) for 
 
 6. Place your cursor over a symbol and hit `M-.` to jump to the
 definition.
+
+7. Hit `M-,` to jump back to the symbol usage location.
