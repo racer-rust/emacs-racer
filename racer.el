@@ -231,7 +231,7 @@ foo(bar, |baz); -> foo|(bar, baz);"
   :lighter " racer"
   :keymap racer-mode-map
   (setq-local eldoc-documentation-function #'racer-eldoc)
-  (make-local-variable 'completion-at-point-functions)
+  (set (make-local-variable 'completion-at-point-functions) nil)
   (add-hook 'completion-at-point-functions #'racer-complete-at-point))
 
 (define-obsolete-function-alias 'racer-turn-on-eldoc 'eldoc-mode)
