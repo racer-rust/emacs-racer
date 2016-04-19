@@ -1,3 +1,7 @@
+# v1.1 (unreleased)
+
+No changes yet.
+
 # v1.0.2 (unreleased)
 
 * Trigger completions after `::` or `.`.
