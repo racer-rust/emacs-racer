@@ -1,6 +1,9 @@
 # v1.0.2 (unreleased)
 
-Nothing yet.
+* Trigger completions after `::` or `.`.
+* Compatibility with latest company
+* Fixed an issue where TAGS from other projects were also completion
+  candidates
 
 # v1.0.1
 
