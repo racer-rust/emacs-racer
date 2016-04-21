@@ -1,6 +1,6 @@
 # Emacs Racer Mode
-[![MELPA](http://melpa.org/packages/company-racer-badge.svg)](http://melpa.org/#/company-racer)
-[![MELPA Stable](http://stable.melpa.org/packages/company-racer-badge.svg)](http://stable.melpa.org/#/company-racer)
+[![MELPA](http://melpa.org/packages/racer-badge.svg)](http://melpa.org/#/racer)
+[![MELPA Stable](http://stable.melpa.org/packages/racer-badge.svg)](http://stable.melpa.org/#/racer)
 
 This package allows emacs to use [Racer](http://github.com/phildawes/racer) for Rust code completion and navigation.
 
