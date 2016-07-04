@@ -38,7 +38,7 @@ This package allows emacs to use [Racer](http://github.com/phildawes/racer) for 
 
    (add-hook 'racer-mode-hook #'company-mode)
 
-   (global-set-key (kbd "TAB") #'company-indent-or-complete-common) ;
+   (define-key rust-mode-map (kbd "TAB") #'company-indent-or-complete-common)
    (setq company-tooltip-align-annotations t)
    ```
    For automatic completions, customize `company-idle-delay` and `company-minimum-prefix-length`.
