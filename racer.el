@@ -130,7 +130,10 @@
   "Return t if a completion should be triggered for a prefix between BEG and END."
   (save-excursion
     (goto-char beg)
-    (looking-back "\\.\\|::" 2)))
+    ;; If we're at the beginning of the buffer, we can't look back 2
+    ;; characters.
+    (ignore-errors
+      (looking-back "\\.\\|::" 2))))
 
 (defun racer-complete--annotation (arg)
   "Return an annotation for completion candidate ARG."
