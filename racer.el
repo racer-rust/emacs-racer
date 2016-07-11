@@ -79,7 +79,7 @@
   :group 'racer)
 
 (defcustom racer-cargo-home
-  (or (getenv "CARGO_HOME") (concat (getenv "HOME") ".cargo"))
+  (or (getenv "CARGO_HOME") (expand-file-name "~/.cargo"))
   "To enable completion for cargo crates, you need to set the CARGO_HOME environment variable to .cargo in your home directory."
   :type 'file
   :group 'racer
