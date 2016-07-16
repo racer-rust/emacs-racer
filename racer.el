@@ -93,7 +93,7 @@
   "Call racer command COMMAND with args ARGS."
   (setenv "RUST_SRC_PATH" (expand-file-name racer-rust-src-path))
   (setenv "CARGO_HOME" (expand-file-name racer-cargo-home))
-  (let ((default-directory (racer--cargo-project-root)))
+  (let ((default-directory (or (racer--cargo-project-root) default-directory)))
     (apply #'process-lines racer-cmd command args)))
 
 (defun racer--call-at-point (command)
