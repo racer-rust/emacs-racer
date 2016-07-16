@@ -82,8 +82,7 @@
   (or (getenv "CARGO_HOME") (expand-file-name "~/.cargo"))
   "To enable completion for cargo crates, you need to set the CARGO_HOME environment variable to .cargo in your home directory."
   :type 'file
-  :group 'racer
-  )
+  :group 'racer)
 
 (defun racer--cargo-project-root ()
   "Find the root of the current Cargo project."
@@ -95,8 +94,7 @@
   (setenv "RUST_SRC_PATH" (expand-file-name racer-rust-src-path))
   (setenv "CARGO_HOME" (expand-file-name racer-cargo-home))
   (let ((default-directory (racer--cargo-project-root)))
-    (apply #'process-lines racer-cmd command args)
-    ))
+    (apply #'process-lines racer-cmd command args)))
 
 (defun racer--call-at-point (command)
   "Call racer command COMMAND at point of current buffer."
