@@ -1,6 +1,6 @@
 # v1.1 (unreleased)
 
-No changes yet.
+* Added `racer-cargo-home`, which enables completion for cargo crates.
 
 # v1.0.2 (unreleased)
 
