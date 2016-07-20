@@ -91,6 +91,10 @@
 
 (defun racer--call (command &rest args)
   "Call racer command COMMAND with args ARGS."
+  (when (null racer-rust-src-path)
+    (user-error "You need to set racer-rust-src-path"))
+  (unless (file-directory-p racer-rust-src-path)
+    (user-error "%s is not a directory" racer-rust-src-path))
   (setenv "RUST_SRC_PATH" (expand-file-name racer-rust-src-path))
   (setenv "CARGO_HOME" (expand-file-name racer-cargo-home))
   (let ((default-directory (or (racer--cargo-project-root) default-directory)))
