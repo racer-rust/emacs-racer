@@ -61,6 +61,8 @@
 (require 's)
 (require 'f)
 (require 'thingatpt)
+(require 'button)
+(require 'help-mode)
 
 (defgroup racer nil
   "Support for Rust completion via racer."
@@ -111,6 +113,242 @@
                         (buffer-file-name)
                         tmp-file)
       (delete-file tmp-file))))
+
+(defun racer--read-rust-string (string)
+  "Convert STRING, a rust string literal, to an elisp string."
+  (when string
+    (->> string
+         ;; Remove outer double quotes.
+         (s-chop-prefix "\"")
+         (s-chop-suffix "\"")
+         ;; Replace escaped characters.
+         (s-replace "\\n" "\n")
+         (s-replace "\\\"" "\"")
+         (s-replace "\\'" "'")
+         (s-replace "\\;" ";"))))
+
+(defun racer--split-parts (raw-output)
+  "Given RAW-OUTPUT from racer, split on semicolons and doublequotes.
+Unescape strings as necessary."
+  (let ((parts nil)
+        (current "")
+        (i 0)
+        (in-string nil))
+    (while (< i (length raw-output))
+      (let ((char (elt raw-output i))
+            (prev-char (and (> i 0) (elt raw-output (1- i)))))
+        (cond
+         ;; A semicolon that wasn't escaped, start a new part.
+         ((and (equal char ?\;) (not (equal prev-char ?\\)))
+          (push current parts)
+          (setq current ""))
+         (t
+          (setq current (concat current (string char))))))
+      (setq i (1+ i)))
+    (push current parts)
+    (mapcar #'racer--read-rust-string (nreverse parts))))
+
+(defun racer--describe-at-point ()
+  "Get a description of the symbol at point."
+  (let* ((full-output (racer--call-at-point "complete-with-snippet"))
+         (match-output (nth 1 full-output))
+         (match-parts (racer--split-parts match-output))
+         (docstring (nth 7 match-parts)))
+    (when (and match-parts (equal (length match-parts) 8))
+      (list :name (s-chop-prefix "MATCH " (nth 0 match-parts))
+            :line (string-to-number (nth 2 match-parts))
+            :column (string-to-number (nth 3 match-parts))
+            :path (nth 4 match-parts)
+            ;; Struct or Function:
+            :kind (nth 5 match-parts)
+            :signature (nth 6 match-parts)
+            :docstring (if (> (length docstring) 0) docstring nil)))))
+
+(defun racer--help-buf (name contents)
+  "Create a *Racer Help: NAME* buffer with CONTENTS."
+  (let ((buf (get-buffer-create
+              (format "*Racer Help: %s*" name)))
+        ;; If the buffer already existed, we need to be able to
+        ;; override `buffer-read-only'.
+        (inhibit-read-only t))
+    (with-current-buffer buf
+      (erase-buffer)
+      (insert contents)
+      (setq buffer-read-only t)
+      (goto-char (point-min))
+      (racer-help-mode))
+    buf))
+
+(defface racer-help-heading-face
+  '((t :weight bold))
+  "Face for markdown headings in *Racer Help* buffers.")
+
+(defun racer--url-p (target)
+  "Return t if TARGET looks like a fully qualified URL."
+  (not (null
+        (string-match-p (rx bol "http" (? "s") "://") target))))
+
+(defun racer--propertize-links (markdown)
+  "Propertize links of in MARKDOWN."
+  (replace-regexp-in-string
+   ;; Text of the form [foo](http://example.com)
+   (rx "[" (group (+? anything)) "](" (group (+? anything)) ")")
+   ;; For every match:
+   (lambda (whole-match)
+     ;; Extract link and target.
+     (let ((link-text (match-string 1 whole-match))
+           (link-target (match-string 2 whole-match)))
+       ;; If it's a web URL, use a clickable link.
+       (if (racer--url-p link-target)
+           (racer--url-button link-text link-target)
+         ;; Otherwise, just discard the target.
+         link-text)))
+   markdown))
+
+(defun racer--propertize-all-inline-code (markdown)
+  "Given a single line MARKDOWN, replace all instances of `foo` or
+\[`foo`\] with a propertized string."
+  (let ((highlight-group
+         (lambda (whole-match)
+           (racer--syntax-highlight (match-string 1 whole-match)))))
+    (->> markdown
+         (replace-regexp-in-string
+          (rx "[`" (group (+? anything)) "`]")
+          highlight-group)
+         (replace-regexp-in-string
+          (rx "`" (group (+? anything)) "`")
+          highlight-group))))
+
+(defun racer--indent-block (str)
+  "Indent every line in STR."
+  (s-join "\n" (--map (concat "    " it) (s-lines str))))
+
+(defun racer--propertize-docstring (docstring)
+  "Replace markdown syntax in DOCSTRING with text properties."
+  (let* ((sections nil)
+         (current-section-lines nil)
+         (in-code nil)
+         ;; A helper function that highlights this text section, then
+         ;; resets the current section.
+         (finish-text-section
+          (lambda ()
+            (when current-section-lines
+              (push (racer--propertize-all-inline-code
+                     (racer--propertize-links
+                      (s-join "\n" (nreverse current-section-lines))))
+                    sections)
+              (setq current-section-lines nil)))))
+    (dolist (line (s-lines docstring))
+      (cond
+       ;; If this is a closing ```
+       ((and (s-starts-with-p "```" line) in-code)
+        ;; Apply syntax highlighting to this section.
+        (push
+         (racer--indent-block
+          (racer--syntax-highlight
+           (s-join "\n" (nreverse current-section-lines))))
+         sections)
+        ;; We're now outside the code section, update state.
+        (setq in-code nil)
+        (setq current-section-lines nil))
+       ;; If this is an opening ```
+       ((s-starts-with-p "```" line)
+        (funcall finish-text-section)
+        (setq in-code t))
+       ;; Headings
+       ((and (not in-code) (s-starts-with-p "# " line))
+        (let ((text (s-trim (s-chop-prefix "#" line))))
+          (funcall finish-text-section)
+          (push (propertize text 'face 'racer-help-heading-face)
+                sections)))
+       ;; For cross references, e.g. [`str`]: ../../std/primitive.str.html
+       ;; we simply skip over them.
+       ((and (not in-code) (string-match-p (rx bol "[`" (+? anything) "`]: ") line)))
+       ;; Skip repeated blank lines (caused by skipping cross references).
+       ((and (equal line "") (equal (-first-item current-section-lines) "")))
+       ;; Otherwise, just keep appending the line to the current
+       ;; section.
+       (t
+        (push line current-section-lines))))
+    (funcall finish-text-section)
+    (s-join "\n" (nreverse sections))))
+
+(defun racer--find-file (path line column)
+  "Open PATH and move point to LINE and COLUMN."
+  (find-file path)
+  (goto-char (point-min))
+  (forward-line (1- line))
+  (forward-char column))
+
+(defun racer--button-go-to-src (button)
+  (racer--find-file
+   (button-get button 'path)
+   (button-get button 'line)
+   (button-get button 'column)))
+
+(define-button-type 'racer-src-button
+  'action 'racer--button-go-to-src
+  'follow-link t
+  'help-echo "Go to definition")
+
+(defun racer--url-button (text url)
+  "Return a button that opens a browser at URL."
+  (with-temp-buffer
+    (insert-text-button
+     text
+     :type 'help-url
+     'help-args (list url))
+    (buffer-string)))
+
+(defun racer--src-button (path line column)
+  "Return a button that navigates to PATH at LINE number and
+COLUMN number."
+  ;; Convert "/foo/bar/baz/foo.rs" to "baz/foo.rs"
+  (let* ((filename (f-filename path))
+         (parent-dir (f-filename (f-parent path)))
+         (short-path (f-join parent-dir filename)))
+    (with-temp-buffer
+      (insert-text-button
+       short-path
+       :type 'racer-src-button
+       'path path
+       'line line
+       'column column)
+      (buffer-string))))
+
+(defun racer-describe ()
+  "Show a *Racer Help* buffer for the function or type at point."
+  (interactive)
+  (let ((description
+         (save-excursion
+           (skip-syntax-forward "w_")
+           (racer--describe-at-point))))
+    (unless description
+      (user-error "No function or type found at point"))
+    (let* ((name (plist-get description :name))
+           (raw-docstring (plist-get description :docstring))
+           (docstring (if raw-docstring
+                          (racer--propertize-docstring raw-docstring)
+                        "Not documented.")))
+      (switch-to-buffer
+       (racer--help-buf
+        name
+        (format
+         "%s is a %s defined in %s.\n\n%s\n\n%s"
+         name
+         (downcase (plist-get description :kind))
+         (racer--src-button
+          (plist-get description :path)
+          (plist-get description :line)
+          (plist-get description :column))
+         (concat "    " (racer--syntax-highlight (plist-get description :signature)))
+         docstring))))))
+
+(define-derived-mode racer-help-mode fundamental-mode
+  "Racer-Help"
+  "Major mode for *Racer Help* buffers.")
+
+(define-key racer-help-mode-map (kbd "q") #'kill-this-buffer)
 
 (defun racer-complete-at-point ()
   "Complete the symbol at point."
@@ -192,22 +430,30 @@
             (xref-push-marker-stack)
           (with-no-warnings
             (ring-insert find-tag-marker-ring (point-marker))))
-        (find-file file)
-        (goto-char (point-min))
-        (forward-line (1- (string-to-number line)))
-        (forward-char (string-to-number col)))
+        (racer--find-file file (string-to-number line) (string-to-number col)))
     (error "No definition found")))
 
 (defun racer--syntax-highlight (str)
   "Apply font-lock properties to a string STR of Rust code."
-  (with-temp-buffer
-    (insert str)
-    (delay-mode-hooks (rust-mode))
-    (if (fboundp 'font-lock-ensure)
-        (font-lock-ensure)
-      (with-no-warnings
-        (font-lock-fontify-buffer)))
-    (buffer-string)))
+  (let (result)
+    ;; Load all of STR in a rust-mode buffer, and use its
+    ;; highlighting.
+    (with-temp-buffer
+      (insert str)
+      (delay-mode-hooks (rust-mode))
+      (if (fboundp 'font-lock-ensure)
+          (font-lock-ensure)
+        (with-no-warnings
+          (font-lock-fontify-buffer)))
+      (setq result (buffer-string)))
+    (when (and
+           ;; If we haven't applied any properties yet,
+           (null (text-properties-at 0 result))
+           ;; and if it's a standalone symbol, then assume it's a
+           ;; variable.
+           (string-match-p (rx bos (+ (any lower "_")) eos) str))
+      (setq result (propertize str 'face 'font-lock-variable-name-face)))
+    result))
 
 (defun racer--goto-func-name ()
   "If point is inside a function call, move to the function name.
