@@ -162,6 +162,8 @@
              (if (string= arg ctx)
                  ""
                (concat " " ctx)))
+	    ("StructField"
+	     (concat " " ctx))
             (_
              (->> ctx
                   (racer--trim-up-to arg)
