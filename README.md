@@ -49,3 +49,13 @@ This package allows emacs to use [Racer](http://github.com/phildawes/racer) for 
 definition.
 
 7. Hit `M-,` to jump back to the symbol usage location.
+
+## Tests
+
+racer.el includes tests. To run them, you need to install
+[Cask](https://github.com/cask/cask), then:
+
+```
+$ cask install
+$ cask exec ert-runner
+```
