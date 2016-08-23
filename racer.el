@@ -5,7 +5,7 @@
 ;; Author: Phil Dawes
 ;; URL: https://github.com/racer-rust/emacs-racer
 ;; Version: 1.1
-;; Package-Requires: ((emacs "24.3") (rust-mode "0.2.0") (dash "2.11.0") (s "1.10.0"))
+;; Package-Requires: ((emacs "24.3") (rust-mode "0.2.0") (dash "2.11.0") (s "1.10.0") (f "0.18.2"))
 ;; Keywords: abbrev, convenience, matching, rust, tools
 
 ;; This file is not part of GNU Emacs.
@@ -59,6 +59,7 @@
 (require 'etags)
 (require 'rust-mode)
 (require 's)
+(require 'f)
 (require 'thingatpt)
 
 (defgroup racer nil
