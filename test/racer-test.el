@@ -1,6 +1,12 @@
 (require 'racer)
 (require 'ert)
 
+(ert-deftest racer--file-and-parent ()
+  (should
+   (equal
+    (racer--file-and-parent "/foo/bar/baz/q.txt")
+    "baz/q.txt")))
+
 (ert-deftest racer--goto-func-name ()
   (with-temp-buffer
     ;; Insert a function call.

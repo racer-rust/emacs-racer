@@ -125,6 +125,12 @@
             :company-docsig #'racer-complete--docsig
             :company-location #'racer-complete--location))))
 
+(defun racer--file-and-parent (path)
+  "Convert /foo/bar/baz/q.txt to baz/q.txt."
+  (let ((file (f-filename path))
+        (parent (f-filename (f-parent path))))
+    (f-join parent file)))
+
 (defun racer-complete (&optional _ignore)
   "Completion candidates at point."
   (->> (racer--call-at-point "complete")
@@ -162,7 +168,7 @@
             ("Module"
              (if (string= arg ctx)
                  ""
-               (concat " " ctx)))
+               (concat " " (racer--file-and-parent ctx))))
 	    ("StructField"
 	     (concat " " ctx))
             (_
