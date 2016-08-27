@@ -1,4 +1,4 @@
-;;; racer.el --- Rust completion and code navigation via racer
+;;; racer.el --- The official Emacs package for Racer
 
 ;; Copyright (c) 2014 Phil Dawes
 
