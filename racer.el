@@ -316,33 +316,40 @@ COLUMN number."
        'column column)
       (buffer-string))))
 
+(defun racer--describe ()
+  "Return a *Racer Help* buffer for the function or type at point.
+If there are multiple candidates at point, use NAME to find the
+correct value."
+  ;; TODO: disambiguate by name
+  (let ((description (racer--describe-at-point)))
+    (when description
+      (let* ((name (plist-get description :name))
+             (raw-docstring (plist-get description :docstring))
+             (docstring (if raw-docstring
+                            (racer--propertize-docstring raw-docstring)
+                          "Not documented.")))
+        (racer--help-buf
+         name
+         (format
+          "%s is a %s defined in %s.\n\n%s\n\n%s"
+          name
+          (downcase (plist-get description :kind))
+          (racer--src-button
+           (plist-get description :path)
+           (plist-get description :line)
+           (plist-get description :column))
+          (concat "    " (racer--syntax-highlight (plist-get description :signature)))
+          docstring))))))
+
 (defun racer-describe ()
   "Show a *Racer Help* buffer for the function or type at point."
   (interactive)
-  (let ((description
-         (save-excursion
-           (skip-syntax-forward "w_")
-           (racer--describe-at-point))))
-    (unless description
-      (user-error "No function or type found at point"))
-    (let* ((name (plist-get description :name))
-           (raw-docstring (plist-get description :docstring))
-           (docstring (if raw-docstring
-                          (racer--propertize-docstring raw-docstring)
-                        "Not documented.")))
-      (temp-buffer-window-show
-       (racer--help-buf
-        name
-        (format
-         "%s is a %s defined in %s.\n\n%s\n\n%s"
-         name
-         (downcase (plist-get description :kind))
-         (racer--src-button
-          (plist-get description :path)
-          (plist-get description :line)
-          (plist-get description :column))
-         (concat "    " (racer--syntax-highlight (plist-get description :signature)))
-         docstring))))))
+  (let ((buf (save-excursion
+               (skip-syntax-forward "w_")
+               (racer--describe))))
+    (if buf
+        (temp-buffer-window-show buf)
+      (user-error "No function or type found at point"))))
 
 (defvar racer-help-mode-map
   (let ((map (make-sparse-keymap)))
