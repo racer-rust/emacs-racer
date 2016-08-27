@@ -148,11 +148,10 @@ Unescape strings as necessary."
     (push current parts)
     (mapcar #'racer--read-rust-string (nreverse parts))))
 
-(defun racer--describe-at-point ()
-  "Get a description of the symbol at point."
-  (let* ((full-output (racer--call-at-point "complete-with-snippet"))
-         (match-output (nth 1 full-output))
-         (match-parts (racer--split-parts match-output))
+(defun racer--split-snippet-match (line)
+  "Given LINE, a string \"MATCH ...\" from complete-with-snippet,
+split it into its constituent parts."
+  (let* ((match-parts (racer--split-parts line))
          (docstring (nth 7 match-parts)))
     (when (and match-parts (equal (length match-parts) 8))
       (list :name (s-chop-prefix "MATCH " (nth 0 match-parts))
@@ -163,6 +162,21 @@ Unescape strings as necessary."
             :kind (nth 5 match-parts)
             :signature (nth 6 match-parts)
             :docstring (if (> (length docstring) 0) docstring nil)))))
+
+(defun racer--describe-at-point (name)
+  "Get a description of the symbol at point matching NAME.
+If there are multiple possibilities with this NAME, prompt
+the user to choose."
+  (let* ((output-lines (racer--call-at-point "complete-with-snippet"))
+         (all-matches (--map (when (s-starts-with-p "MATCH " it)
+                               (racer--split-snippet-match it))
+                             output-lines))
+         (relevant-matches (--filter (equal (plist-get it :name) name)
+                                     all-matches)))
+    (if (> (length relevant-matches) 1)
+        ;; TODO: use completing-read here.
+        (user-error "multiple matches")
+      (-first-item relevant-matches))))
 
 (defun racer--help-buf (name contents)
   "Create a *Racer Help: NAME* buffer with CONTENTS."
@@ -316,12 +330,11 @@ COLUMN number."
        'column column)
       (buffer-string))))
 
-(defun racer--describe ()
+(defun racer--describe (name)
   "Return a *Racer Help* buffer for the function or type at point.
 If there are multiple candidates at point, use NAME to find the
 correct value."
-  ;; TODO: disambiguate by name
-  (let ((description (racer--describe-at-point)))
+  (let ((description (racer--describe-at-point name)))
     (when description
       (let* ((name (plist-get description :name))
              (raw-docstring (plist-get description :docstring))
@@ -344,9 +357,7 @@ correct value."
 (defun racer-describe ()
   "Show a *Racer Help* buffer for the function or type at point."
   (interactive)
-  (let ((buf (save-excursion
-               (skip-syntax-forward "w_")
-               (racer--describe))))
+  (let ((buf (racer--describe (thing-at-point 'symbol))))
     (if buf
         (temp-buffer-window-show buf)
       (user-error "No function or type found at point"))))

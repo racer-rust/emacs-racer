@@ -115,7 +115,7 @@ baz.")))
                 "MATCH new;new();294;11;/home/user/src/rustc-1.10.0/src/libstd/../libcollections/vec.rs;Function;pub fn new() -> Vec<T>;\"Constructs a new, empty `Vec<T>`.\""
                 "END"))))
     (should
-     (equal (plist-get (racer--describe-at-point) :name)
+     (equal (plist-get (racer--describe-at-point "new") :name)
             "new"))))
 
 (ert-deftest racer--describe-at-point-nil-docstring ()
@@ -127,7 +127,7 @@ baz.")))
                 "MATCH new;new();294;11;/home/user/src/rustc-1.10.0/src/libstd/../libcollections/vec.rs;Function;pub fn new() -> Vec<T>;\"\""
                 "END"))))
     (should
-     (null (plist-get (racer--describe-at-point) :docstring)))))
+     (null (plist-get (racer--describe-at-point "new") :docstring)))))
 
 (ert-deftest racer--describe-at-point-shortest ()
   "If there are multiple matches, we want the shortest.
@@ -137,11 +137,12 @@ Since we've moved point to the end of symbol, the other functions just happen to
              (lambda (&rest _)
                (list
                 "PREFIX 36,37,n"
+                "MATCH new_bar;new_bar();294;11;/home/user/src/rustc-1.10.0/src/libstd/../libcollections/vec.rs;Function;pub fn new() -> Vec<T>;\"\""
                 "MATCH new;new();294;11;/home/user/src/rustc-1.10.0/src/libstd/../libcollections/vec.rs;Function;pub fn new() -> Vec<T>;\"\""
                 "MATCH new_foo;new_foo();294;11;/home/user/src/rustc-1.10.0/src/libstd/../libcollections/vec.rs;Function;pub fn new() -> Vec<T>;\"\""
                 "END"))))
     (should
-     (equal (plist-get (racer--describe-at-point) :name)
+     (equal (plist-get (racer--describe-at-point "new") :name)
             "new"))))
 
 (ert-deftest racer--syntax-highlight ()
@@ -166,31 +167,13 @@ Since we've moved point to the end of symbol, the other functions just happen to
   "Smoke test for `racer-describe'."
   (cl-letf (((symbol-function 'racer--call)
              (lambda (&rest _)
+               (setq point-during-call (point))
                (list
                 "PREFIX 36,37,n"
-                "MATCH new;new();294;11;/home/user/src/rustc-1.10.0/src/libstd/../libcollections/vec.rs;Function;pub fn new() -> Vec<T>;\"\""
+                "MATCH foo;foo();294;11;/home/user/src/rustc-1.10.0/src/libstd/../libcollections/vec.rs;Function;pub fn new() -> Vec<T>;\"\""
                 "END"))))
-    (racer-describe)))
-
-(ert-deftest racer-describe-uses-whole-symbol ()
-  "Racer uses the symbol *before* point, so make sure we move point to
-the end of the current symbol.
-
-Otherwise, if the point is halfway through HashMap, and we've
-also imported HashSet, we end up describing HashSet."
-  (let (point-during-call)
-    (cl-letf (((symbol-function 'racer--call)
-               (lambda (&rest _)
-                 (setq point-during-call (point))
-                 (list
-                  "PREFIX 36,37,n"
-                  "MATCH new;new();294;11;/home/user/src/rustc-1.10.0/src/libstd/../libcollections/vec.rs;Function;pub fn new() -> Vec<T>;\"\""
-                  "END"))))
-      (with-temp-buffer
-        (rust-mode)
-        (insert "foo();")
-        (goto-char (point-min))
-        ;; This should move point to the end of 'foo' before calling
-        ;; racer--call.
-        (racer-describe))
-      (should (equal point-during-call 4)))))
+    (with-temp-buffer
+      (rust-mode)
+      (insert "foo();")
+      (goto-char (point-min))
+      (racer-describe))))
