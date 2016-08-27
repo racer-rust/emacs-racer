@@ -1,4 +1,8 @@
-# v1.1 (unreleased)
+# v1.2 (unrelased)
+
+No changes yet.
+
+# v1.1
 
 * Fixed a crash when point is at the beginning of buffer.
 * Fixed a crash when not in a cargo project.
