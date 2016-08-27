@@ -174,8 +174,12 @@ the user to choose."
          (relevant-matches (--filter (equal (plist-get it :name) name)
                                      all-matches)))
     (if (> (length relevant-matches) 1)
-        ;; TODO: use completing-read here.
-        (user-error "multiple matches")
+        ;; We might have multiple matches with the same name but
+        ;; different types. E.g. Vec::from.
+        (let ((signature
+               (completing-read "Multiple matches: "
+                                (--map (plist-get it :signature) relevant-matches))))
+          (--first (equal (plist-get it :signature) signature) relevant-matches))
       (-first-item relevant-matches))))
 
 (defun racer--help-buf (name contents)
