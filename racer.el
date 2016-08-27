@@ -330,7 +330,7 @@ COLUMN number."
            (docstring (if raw-docstring
                           (racer--propertize-docstring raw-docstring)
                         "Not documented.")))
-      (switch-to-buffer
+      (temp-buffer-window-show
        (racer--help-buf
         name
         (format
