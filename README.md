@@ -14,7 +14,6 @@ This is the official Emacs package for
     - [Describe Functions and Types](#describe-functions-and-types)
     - [Installation](#installation)
     - [Tests](#tests)
-    - [Limitations](#limitations)
 
 <!-- markdown-toc end -->
 
@@ -26,6 +25,10 @@ racer.el supports code completion of variables, functions and modules.
 
 You can also press <kbd>F1</kbd> to pop up a help buffer for the current
 completion candidate.
+
+Note that due to a
+[limitation of racer](https://github.com/phildawes/racer/issues/389),
+racer.el cannot offer completion for macros.
 
 ## Find Definitions
 
@@ -98,10 +101,3 @@ racer.el includes tests. To run them, you need to install
 $ cask install
 $ cask exec ert-runner
 ```
-
-## Limitations
-
-racer.el cannot offer tab completion on macros like `vec!`. You will
-need to use type annotation: `let x: Vec<_> = vec![foo, bar]`.
-
-This is a limitation of [racer](https://github.com/phildawes/racer/issues/389).
