@@ -50,9 +50,11 @@ Use <kbd>M-x racer-describe</kbd> to open the help buffer.
 
 ## Installation
 
-1. Build / Install [Racer](http://github.com/phildawes/racer)
+1. Install [Racer](http://github.com/phildawes/racer):
 
-1. Install emacs 24.
+   ```
+   $ cargo install racer
+   ```
 
 2. Allow Emacs to install packages from MELPA:
 
@@ -61,11 +63,12 @@ Use <kbd>M-x racer-describe</kbd> to open the help buffer.
    (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
    ```
 
-2. Install racer: `M-x package-list` Find the racer package and install it
+2. Install racer: `M-x package-install RET racer RET`
 
-3. If racer is not in the path, configure emacs to find your racer binary and rust source directory
+3. Download the [rust sourcecode](https://www.rust-lang.org/en-US/downloads.html),
+   and configure emacs to find your rust source directory:
+   
    ```el
-   (setq racer-cmd "<path-to-racer-srcdir>/target/release/racer")
    (setq racer-rust-src-path "<path-to-rust-srcdir>/src/")
    ```
 
@@ -75,7 +78,7 @@ Use <kbd>M-x racer-describe</kbd> to open the help buffer.
    (add-hook 'racer-mode-hook #'eldoc-mode)
    ```
 
-   For completions, install company with `M-x package-install RET company`. A sample configuration:
+   For completions, install company with `M-x package-install RET company RET`. A sample configuration:
    ```el
 
    (add-hook 'racer-mode-hook #'company-mode)
@@ -85,7 +88,7 @@ Use <kbd>M-x racer-describe</kbd> to open the help buffer.
    ```
    For automatic completions, customize `company-idle-delay` and `company-minimum-prefix-length`.
 
-5. Open a rust file and try typing ```use std::io::B``` and press `<tab>`
+5. Open a rust file and try typing ```use std::io::B``` and press <kbd>TAB</kbd>.
 
 6. Place your cursor over a symbol and hit `M-.` to jump to the
 definition.

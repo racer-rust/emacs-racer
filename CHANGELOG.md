@@ -1,6 +1,6 @@
 # v1.2 (unrelased)
 
-No changes yet.
+* We now explicitly try `~/.cargo/bin/racer` if `racer isn't on path.
 
 # v1.1
 

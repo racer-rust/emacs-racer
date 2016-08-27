@@ -70,7 +70,9 @@
   :group 'rust-mode)
 
 (defcustom racer-cmd
-  (or (executable-find "racer") "/usr/local/bin/racer")
+  (or (executable-find "racer")
+      (f-expand "~/.cargo/bin/racer")
+      "/usr/local/bin/racer")
   "Path to the racer binary."
   :type 'file
   :group 'racer)
