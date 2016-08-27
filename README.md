@@ -1,10 +1,48 @@
-# Emacs Racer Mode
+# Racer for Emacs
 [![MELPA](http://melpa.org/packages/racer-badge.svg)](http://melpa.org/#/racer)
 [![MELPA Stable](http://stable.melpa.org/packages/racer-badge.svg)](http://stable.melpa.org/#/racer)
 
-This package allows emacs to use [Racer](http://github.com/phildawes/racer) for Rust code completion and navigation.
+This is the official Emacs package for
+[Racer](http://github.com/phildawes/racer).
+
+<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-generate-toc again -->
+**Table of Contents**
+
+- [Racer for Emacs](#racer-for-emacs)
+    - [Completion](#completion)
+    - [Find Definitions](#find-definitions)
+    - [Describe Functions and Types](#describe-functions-and-types)
+    - [Installation](#installation)
+    - [Tests](#tests)
+
+<!-- markdown-toc end -->
+
+## Completion
+
+racer.el supports code completion of variables, functions and modules.
 
 ![racer completion screenshot](images/racer_completion.png)
+
+You can also press <kbd>F1</kbd> to pop up a help buffer for the current
+completion candidate.
+
+## Find Definitions
+
+racer.el can jump to definition of functions and types.
+
+![racer go to definition](images/racer_goto.gif)
+
+You can use <kbd>M-.</kbd> to go to the definition, and <kbd>M-,</kbd>
+to go back.
+
+## Describe Functions and Types
+
+racer.el can show a help buffer based on the docstring of the thing at
+point.
+
+![racer completion screenshot](images/racer_help.png)
+
+Use <kbd>M-x racer-describe</kbd> to open the help buffer.
 
 ## Installation
 
