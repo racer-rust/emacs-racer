@@ -391,6 +391,7 @@ Commands:
             :annotation-function #'racer-complete--annotation
             :company-prefix-length (racer-complete--prefix-p beg end)
             :company-docsig #'racer-complete--docsig
+            :company-doc-buffer #'racer--describe
             :company-location #'racer-complete--location))))
 
 (defun racer-complete (&optional _ignore)
