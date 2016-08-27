@@ -1,8 +1,12 @@
 # v1.1 (unreleased)
 
+* Fixed a crash when point is at the beginning of buffer.
+* Fixed a crash when not in a cargo project.
 * Added `racer-cargo-home`, which enables completion for cargo crates.
+* Various improvements to formatting of completion candidates.
+* Added `racer-describe`.
 
-# v1.0.2 (unreleased)
+# v1.0.2
 
 * Trigger completions after `::` or `.`.
 * Compatibility with latest company
