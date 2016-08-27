@@ -167,7 +167,11 @@ split it into its constituent parts."
   "Get a description of the symbol at point matching NAME.
 If there are multiple possibilities with this NAME, prompt
 the user to choose."
-  (let* ((output-lines (racer--call-at-point "complete-with-snippet"))
+  (let* ((output-lines (save-excursion
+                         ;; Move to the end of the current symbol, to
+                         ;; increase racer accuracy.
+                         (skip-syntax-forward "w_")
+                         (racer--call-at-point "complete-with-snippet")))
          (all-matches (--map (when (s-starts-with-p "MATCH " it)
                                (racer--split-snippet-match it))
                              output-lines))

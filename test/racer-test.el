@@ -183,3 +183,25 @@ Since we've moved point to the end of symbol, the other functions just happen to
       (insert "foo();")
       (goto-char (point-min))
       (racer-describe))))
+
+(ert-deftest racer-describe-uses-whole-symbol ()
+  "Racer uses the symbol *before* point, so make sure we move point to
+the end of the current symbol.
+
+Otherwise, if the point is at the start of the symbol, we don't find anything."
+  (let (point-during-call)
+    (cl-letf (((symbol-function 'racer--call)
+               (lambda (&rest _)
+                 (setq point-during-call (point))
+                 (list
+                  "PREFIX 36,37,n"
+                  "MATCH foo;foo();294;11;/home/user/src/rustc-1.10.0/src/libstd/../libcollections/vec.rs;Function;pub fn new() -> Vec<T>;\"\""
+                  "END"))))
+      (with-temp-buffer
+        (rust-mode)
+        (insert "foo();")
+        (goto-char (point-min))
+        ;; This should move point to the end of 'foo' before calling
+        ;; racer--call.
+        (racer-describe))
+      (should (equal point-during-call 4)))))
