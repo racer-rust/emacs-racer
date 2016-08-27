@@ -344,11 +344,19 @@ COLUMN number."
          (concat "    " (racer--syntax-highlight (plist-get description :signature)))
          docstring))))))
 
+(defvar racer-help-mode-map
+  (let ((map (make-sparse-keymap)))
+    (set-keymap-parent map (make-composed-keymap button-buffer-map
+                                                 special-mode-map))
+    map)
+  "Keymap for racer help mode.")
+
 (define-derived-mode racer-help-mode fundamental-mode
   "Racer-Help"
-  "Major mode for *Racer Help* buffers.")
+  "Major mode for *Racer Help* buffers.
 
-(define-key racer-help-mode-map (kbd "q") #'kill-this-buffer)
+Commands:
+\\{racer-help-mode-map}")
 
 (defun racer-complete-at-point ()
   "Complete the symbol at point."
