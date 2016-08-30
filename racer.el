@@ -1,4 +1,4 @@
-;;; racer.el --- The official Emacs package for Racer
+;;; racer.el --- The official Emacs package for Racer  -*- lexical-binding: t -*-
 
 ;; Copyright (c) 2014 Phil Dawes
 
