@@ -188,10 +188,9 @@ the user to choose."
           (--first (equal (plist-get it :signature) signature) relevant-matches))
       (-first-item relevant-matches))))
 
-(defun racer--help-buf (name contents)
-  "Create a *Racer Help: NAME* buffer with CONTENTS."
-  (let ((buf (get-buffer-create
-              (format "*Racer Help: %s*" name)))
+(defun racer--help-buf (contents)
+  "Create a *Racer Help* buffer with CONTENTS."
+  (let ((buf (get-buffer-create "*Racer Help*"))
         ;; If the buffer already existed, we need to be able to
         ;; override `buffer-read-only'.
         (inhibit-read-only t))
@@ -352,7 +351,6 @@ correct value."
                             (racer--propertize-docstring raw-docstring)
                           "Not documented.")))
         (racer--help-buf
-         name
          (format
           "%s is a %s defined in %s.\n\n%s\n\n%s"
           name

@@ -28,7 +28,7 @@
 (ert-deftest racer--help-buf ()
   (should
    (bufferp
-    (racer--help-buf "Foo" "foo bar."))))
+    (racer--help-buf "foo bar."))))
 
 (ert-deftest racer--propertize-all-inline-code ()
   (should
