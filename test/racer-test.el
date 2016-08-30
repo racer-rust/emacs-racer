@@ -173,7 +173,6 @@ Since we've moved point to the end of symbol, the other functions just happen to
   "Smoke test for `racer-describe'."
   (cl-letf (((symbol-function 'racer--call)
              (lambda (&rest _)
-               (setq point-during-call (point))
                (list
                 "PREFIX 36,37,n"
                 "MATCH foo;foo();294;11;/home/user/src/rustc-1.10.0/src/libstd/../libcollections/vec.rs;Function;pub fn new() -> Vec<T>;\"\""
