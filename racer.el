@@ -109,11 +109,12 @@
   "Call racer command COMMAND at point of current buffer."
   (let ((tmp-file (make-temp-file "racer")))
     (write-region nil nil tmp-file nil 'silent)
-    (prog1 (racer--call command
-                        (number-to-string (line-number-at-pos))
-                        (number-to-string (current-column))
-                        (buffer-file-name)
-                        tmp-file)
+    (unwind-protect
+        (racer--call command
+                     (number-to-string (line-number-at-pos))
+                     (number-to-string (current-column))
+                     (buffer-file-name)
+                     tmp-file)
       (delete-file tmp-file))))
 
 (defun racer--read-rust-string (string)
