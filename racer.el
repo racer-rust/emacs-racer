@@ -196,51 +196,52 @@
 ;;;###autoload
 (defun racer--xref-backend () 'racer)
 
-(cl-defmethod xref-backend-identifier-at-point ((_backend (eql racer)))
-  (let ((tmp-file (make-temp-file "racer")))
-    (write-region nil nil tmp-file nil 'silent)
-    (propertize (symbol-name (symbol-at-point))
-		'line (line-number-at-pos)
-		'column (current-column)
-		'file-name (buffer-file-name)
-		'tmp-file tmp-file)))
+(when (>= emacs-major-version 25)
+  (cl-defmethod xref-backend-identifier-at-point ((_backend (eql racer)))
+    (let ((tmp-file (make-temp-file "racer")))
+      (write-region nil nil tmp-file nil 'silent)
+      (propertize (symbol-name (symbol-at-point))
+		  'line (line-number-at-pos)
+		  'column (current-column)
+		  'file-name (buffer-file-name)
+		  'tmp-file tmp-file)))
 
-(cl-defmethod xref-backend-definitions ((_backend (eql racer)) identifier)
-  (let ((tmp-file (plist-get (text-properties-at 0 identifier) 'tmp-file))
-	(completions (racer--xref-make-definitions identifier)))
-    (prog1 (if (listp completions)
-	       completions
-	     (list completions))
-      (delete-file tmp-file))))
+  (cl-defmethod xref-backend-definitions ((_backend (eql racer)) identifier)
+    (let ((tmp-file (plist-get (text-properties-at 0 identifier) 'tmp-file))
+	  (completions (racer--xref-make-definitions identifier)))
+      (prog1 (if (listp completions)
+		 completions
+	       (list completions))
+	(delete-file tmp-file))))
 
-(cl-defmethod xref-backend-references ((_backend (eql racer)) identifier)
-  nil)
+  (cl-defmethod xref-backend-references ((_backend (eql racer)) identifier)
+    nil)
 
-(defun racer--xref-make-definitions (identifier)
-  (setenv "RUST_SRC_PATH" (expand-file-name racer-rust-src-path))
-  (let* ((properties (text-properties-at 0 identifier))
-	 (line-num (number-to-string (plist-get properties 'line)))
-	 (column-num (number-to-string (plist-get properties 'column)))
-	 (file-name (plist-get properties 'file-name))
-	 (tmp-file (plist-get properties 'tmp-file))
-	 (output (apply #' process-lines "racer" (list
-						  "find-definition"
-						  line-num
-						  column-num
-						  file-name
-						  tmp-file)))
-	 (completions '())
-	(regexp "MATCH \\w+,\\([0-9]+\\),\\([0-9]+\\),\\(.+\\),.+,\\(.+\\)"))
-    (dolist (completion output completions)
-      (when (string-match regexp completion)
-	(setq completions (append completions
-				  (xref-make
-				   (match-string 4 completion) ;; name
-				   (xref-make-file-location
-				    (match-string 3 completion) ;; file name
-				    (string-to-number (match-string 1 completion)) ;; line
-				    (string-to-number (match-string 2 completion)) ;; column
-				    ))))))))
+  (defun racer--xref-make-definitions (identifier)
+    (setenv "RUST_SRC_PATH" (expand-file-name racer-rust-src-path))
+    (let* ((properties (text-properties-at 0 identifier))
+	   (line-num (number-to-string (plist-get properties 'line)))
+	   (column-num (number-to-string (plist-get properties 'column)))
+	   (file-name (plist-get properties 'file-name))
+	   (tmp-file (plist-get properties 'tmp-file))
+	   (output (apply #' process-lines "racer" (list
+						    "find-definition"
+						    line-num
+						    column-num
+						    file-name
+						    tmp-file)))
+	   (completions '())
+	   (regexp "MATCH \\w+,\\([0-9]+\\),\\([0-9]+\\),\\(.+\\),.+,\\(.+\\)"))
+      (dolist (completion output completions)
+	(when (string-match regexp completion)
+	  (setq completions (append completions
+				    (xref-make
+				     (match-string 4 completion) ;; name
+				     (xref-make-file-location
+				      (match-string 3 completion) ;; file name
+				      (string-to-number (match-string 1 completion)) ;; line
+				      (string-to-number (match-string 2 completion)) ;; column
+				      )))))))))
 
 
 (defun racer--syntax-highlight (str)
