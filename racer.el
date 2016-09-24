@@ -112,7 +112,7 @@
     (unwind-protect
         (racer--call command
                      (number-to-string (line-number-at-pos))
-                     (number-to-string (racer-current-column))
+                     (number-to-string (racer--current-column))
                      (buffer-file-name)
                      tmp-file)
       (delete-file tmp-file))))
