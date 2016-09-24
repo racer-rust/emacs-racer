@@ -460,17 +460,10 @@ Commands:
   (cons (get-text-property 0 'file arg)
         (get-text-property 0 'line arg)))
 
-(defun racer-get-bol-to-point ()
-  "Get text from start of line to point."
-  (let ((p (point)))
-    (save-excursion
-      (beginning-of-line)
-      (let ((bol (point)))
-        (buffer-substring-no-properties bol p)))))
-
-(defun racer-current-column ()
+(defun racer--current-column ()
   "Get the current column based on underlying character representation."
-  (string-width (racer-get-bol-to-point)))
+  (length (buffer-substring-no-properties
+           (line-beginning-position) (point))))
 
 ;;;###autoload
 (defun racer-find-definition ()
