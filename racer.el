@@ -112,7 +112,7 @@
     (unwind-protect
         (racer--call command
                      (number-to-string (line-number-at-pos))
-                     (number-to-string (current-column))
+                     (number-to-string (racer--current-column))
                      (buffer-file-name)
                      tmp-file)
       (delete-file tmp-file))))
@@ -459,6 +459,11 @@ Commands:
   "Return location of completion candidate ARG."
   (cons (get-text-property 0 'file arg)
         (get-text-property 0 'line arg)))
+
+(defun racer--current-column ()
+  "Get the current column based on underlying character representation."
+  (length (buffer-substring-no-properties
+           (line-beginning-position) (point))))
 
 ;;;###autoload
 (defun racer-find-definition ()
