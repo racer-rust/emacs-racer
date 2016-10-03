@@ -84,7 +84,7 @@
   :group 'racer)
 
 (defcustom racer-cargo-home
-  "~/.cargo"
+  (expand-file-name "~/.cargo")
   "Path to your current cargo home. Usually `~/.cargo'."
   :type 'file
   :group 'racer)
@@ -96,20 +96,14 @@
 
 (defun racer--call (command &rest args)
   "Call racer command COMMAND with args ARGS."
-  (let ((racer-rust-src-path (seq-some (lambda (p)
-                                         (when (and p (file-directory-p p))
-                                           (expand-file-name p)))
-                                       (list racer-rust-src-path (getenv "RUST_SRC_PATH"))))
-        (racer-cargo-home (seq-some (lambda (p)
-                                      (when (and p (file-directory-p p))
-                                        (expand-file-name p)))
-                                    (list racer-cargo-home (getenv "CARGO_HOME")))))
-    (when (null racer-rust-src-path)
-      (user-error "You need to set racer-rust-src-path or RUST_SRC_PATH"))
+  (let ((rust-src-path (or racer-rust-src-path (getenv "RUST_SRC_PATH")))
+        (cargo-home (or racer-cargo-home (getenv "CARGO_HOME"))))
+    (when (null rust-src-path)
+      (user-error "You need to set `racer-rust-src-path' or `RUST_SRC_PATH'"))
     (let ((default-directory (or (racer--cargo-project-root) default-directory))
           (process-environment (append (list
-                                        (format "RUST_SRC_PATH=%s" racer-rust-src-path)
-                                        (format "CARGO_HOME=%s" racer-cargo-home))
+                                        (format "RUST_SRC_PATH=%s" rust-src-path)
+                                        (format "CARGO_HOME=%s" cargo-home))
                                        process-environment)))
       (apply #'process-lines racer-cmd command args))))
 
