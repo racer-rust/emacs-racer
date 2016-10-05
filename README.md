@@ -65,13 +65,26 @@ Use <kbd>M-x racer-describe</kbd> to open the help buffer.
 
 2. Install racer: `M-x package-install RET racer RET`
 
-3. Download the [rust sourcecode](https://www.rust-lang.org/en-US/downloads.html),
-   and configure emacs to find your rust source directory:
-   
-   ```el
-   (setq racer-rust-src-path "<path-to-rust-srcdir>/src/")
-   ```
+3. Download the Rust source code:
 
+  * If you use rustup, use it to download the rust source code in sync with the
+    current toolchain:
+
+    ```sh
+    $ rustup component add rust-src
+    ```
+    
+    No further configuration of emacs-racer is necessary, since racer looks in
+    rustup's download location by default.
+
+  * If you don't use rustup, download
+    the [rust sourcecode](https://www.rust-lang.org/en-US/downloads.html), and
+    configure emacs to find your rust source directory:
+   
+    ```el
+    (setq racer-rust-src-path "<path-to-rust-srcdir>/src/")
+    ```
+   
 4. Configure Emacs to activate racer when rust-mode starts:
    ```el
    (add-hook 'rust-mode-hook #'racer-mode)
