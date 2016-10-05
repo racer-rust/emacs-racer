@@ -36,7 +36,10 @@
 
 ;;; Commentary:
 
-;; You will need to configure Emacs to find racer:
+;; If you install racer via `cargo install racer' and
+;; the Rust sources via `rustup component add rust-src',
+;; no configuration is necessary.
+;; Otherwise, you can configure Emacs to find racer:
 ;;
 ;; (setq racer-rust-src-path "<path-to-rust-srcdir>/src/")
 ;; (setq racer-cmd "<path-to-racer>/target/release/racer")
@@ -78,11 +81,9 @@
   :group 'racer)
 
 (defcustom racer-rust-src-path
-  (or
-   (getenv "RUST_SRC_PATH")
-   "/usr/local/src/rust/src")
+  (getenv "RUST_SRC_PATH")
   "Path to the rust source tree.
-If nil, we will query $RUST_SRC_PATH at runtime."
+If nil, we will use $RUST_SRC_PATH at runtime, if present."
   :type 'file
   :group 'racer)
 
@@ -104,13 +105,13 @@ If nil, we will query $CARGO_HOME at runtime."
   "Call racer command COMMAND with args ARGS."
   (let ((rust-src-path (or racer-rust-src-path (getenv "RUST_SRC_PATH")))
         (cargo-home (or racer-cargo-home (getenv "CARGO_HOME"))))
-    (when (null rust-src-path)
-      (user-error "You need to set `racer-rust-src-path' or `RUST_SRC_PATH'"))
     (let ((default-directory (or (racer--cargo-project-root) default-directory))
-          (process-environment (append (list
-                                        (format "RUST_SRC_PATH=%s" rust-src-path)
-                                        (format "CARGO_HOME=%s" cargo-home))
-                                       process-environment)))
+          (process-environment
+           (append
+            (remove nil (list (when rust-src-path
+                                (format "RUST_SRC_PATH=%s" rust-src-path))
+                              (format "CARGO_HOME=%s" cargo-home))))
+           process-environment))
       (apply #'process-lines racer-cmd command args))))
 
 (defun racer--call-at-point (command)
