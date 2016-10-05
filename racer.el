@@ -78,14 +78,20 @@
   :group 'racer)
 
 (defcustom racer-rust-src-path
-  "/usr/local/src/rust/src"
-  "Path to the rust source tree."
+  (or
+   (getenv "RUST_SRC_PATH")
+   "/usr/local/src/rust/src")
+  "Path to the rust source tree.
+If nil, we will query $RUST_SRC_PATH at runtime."
   :type 'file
   :group 'racer)
 
 (defcustom racer-cargo-home
-  (expand-file-name "~/.cargo")
-  "Path to your current cargo home. Usually `~/.cargo'."
+  (or
+   (getenv "CARGO_HOME")
+   (expand-file-name "~/.cargo"))
+  "Path to your current cargo home. Usually `~/.cargo'.
+If nil, we will query $CARGO_HOME at runtime."
   :type 'file
   :group 'racer)
 
