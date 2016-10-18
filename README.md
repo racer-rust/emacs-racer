@@ -84,6 +84,7 @@ Use <kbd>M-x racer-describe</kbd> to open the help buffer.
 
    (add-hook 'racer-mode-hook #'company-mode)
 
+   (require 'rust-mode)
    (define-key rust-mode-map (kbd "TAB") #'company-indent-or-complete-common)
    (setq company-tooltip-align-annotations t)
    ```
