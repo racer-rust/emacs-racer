@@ -8,7 +8,6 @@ env:
   - EVM_EMACS=emacs-24.3-bin
   - EVM_EMACS=emacs-24.4-bin
   - EVM_EMACS=emacs-24.5-bin
-  - EVM_EMACS=emacs-25.1-bin
 script:
   - emacs --version
   - make test
