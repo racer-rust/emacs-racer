@@ -89,7 +89,7 @@ If nil, we will query $RUST_SRC_PATH at runtime."
 (defcustom racer-cargo-home
   (or
    (getenv "CARGO_HOME")
-   (expand-file-name "~/.cargo"))
+   "~/.cargo")
   "Path to your current cargo home. Usually `~/.cargo'.
 If nil, we will query $CARGO_HOME at runtime."
   :type 'file
@@ -108,8 +108,8 @@ If nil, we will query $CARGO_HOME at runtime."
       (user-error "You need to set `racer-rust-src-path' or `RUST_SRC_PATH'"))
     (let ((default-directory (or (racer--cargo-project-root) default-directory))
           (process-environment (append (list
-                                        (format "RUST_SRC_PATH=%s" rust-src-path)
-                                        (format "CARGO_HOME=%s" cargo-home))
+                                        (format "RUST_SRC_PATH=%s" (expand-file-name rust-src-path))
+                                        (format "CARGO_HOME=%s" (expand-file-name cargo-home)))
                                        process-environment)))
       (apply #'process-lines racer-cmd command args))))
 
