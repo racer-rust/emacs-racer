@@ -2,6 +2,7 @@
 [![MELPA](http://melpa.org/packages/racer-badge.svg)](http://melpa.org/#/racer)
 [![MELPA Stable](http://stable.melpa.org/packages/racer-badge.svg)](http://stable.melpa.org/#/racer)
 [![Build Status](https://travis-ci.org/racer-rust/emacs-racer.svg?branch=master)](https://travis-ci.org/racer-rust/emacs-racer)
+[![Coverage Status](https://coveralls.io/repos/github/racer-rust/emacs-racer/badge.svg?branch=master)](https://coveralls.io/github/racer-rust/emacs-racer?branch=master)
 
 This is the official Emacs package for
 [Racer](http://github.com/phildawes/racer).
