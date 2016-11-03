@@ -143,8 +143,7 @@ If nil, we will query $CARGO_HOME at runtime."
 Unescape strings as necessary."
   (let ((parts nil)
         (current "")
-        (i 0)
-        (in-string nil))
+        (i 0))
     (while (< i (length raw-output))
       (let ((char (elt raw-output i))
             (prev-char (and (> i 0) (elt raw-output (1- i)))))
@@ -432,7 +431,7 @@ Commands:
       (substring s (+ idx (length needle)))
     s))
 
-(defun racer-complete--prefix-p (beg end)
+(defun racer-complete--prefix-p (beg _end)
   "Return t if a completion should be triggered for a prefix between BEG and END."
   (save-excursion
     (goto-char beg)
