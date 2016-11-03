@@ -117,17 +117,24 @@ If nil, we will query $CARGO_HOME at runtime."
                                        process-environment)))
       (apply #'process-lines racer-cmd command args))))
 
+(defmacro racer--with-temporary-file (path-sym &rest body)
+  "Create a temporary file, and bind its path to PATH-SYM.
+Evaluate BODY, then delete the temporary file."
+  (declare (indent 1) (debug (symbolp body)))
+  `(let ((,path-sym (make-temp-file "racer")))
+     (unwind-protect
+         (progn ,@body)
+       (delete-file ,path-sym))))
+
 (defun racer--call-at-point (command)
   "Call racer command COMMAND at point of current buffer."
-  (let ((tmp-file (make-temp-file "racer")))
+  (racer--with-temporary-file tmp-file
     (write-region nil nil tmp-file nil 'silent)
-    (unwind-protect
-        (racer--call command
-                     (number-to-string (line-number-at-pos))
-                     (number-to-string (racer--current-column))
-                     (buffer-file-name)
-                     tmp-file)
-      (delete-file tmp-file))))
+    (racer--call command
+                 (number-to-string (line-number-at-pos))
+                 (number-to-string (racer--current-column))
+                 (buffer-file-name)
+                 tmp-file)))
 
 (defun racer--read-rust-string (string)
   "Convert STRING, a rust string literal, to an elisp string."
