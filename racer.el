@@ -105,7 +105,9 @@ If nil, we will query $CARGO_HOME at runtime."
   (propertize text 'face 'racer-help-heading-face))
 
 (defun racer--call (command &rest args)
-  "Call racer command COMMAND with args ARGS."
+  "Call racer command COMMAND with args ARGS.
+Return stdout if COMMAND exits normally, otherwise show an
+error."
   (let ((rust-src-path (or racer-rust-src-path (getenv "RUST_SRC_PATH")))
         (cargo-home (or racer-cargo-home (getenv "CARGO_HOME"))))
     (when (null rust-src-path)
@@ -115,7 +117,12 @@ If nil, we will query $CARGO_HOME at runtime."
                                         (format "RUST_SRC_PATH=%s" (expand-file-name rust-src-path))
                                         (format "CARGO_HOME=%s" (expand-file-name cargo-home)))
                                        process-environment)))
-      (apply #'process-lines racer-cmd command args))))
+      (-let [(exit-code stdout _stderr)
+             (racer--shell-command racer-cmd (cons command args))]
+        (unless (zerop exit-code)
+          (user-error "%s exited with %s. `M-x racer-debug' for more info"
+                      racer-cmd exit-code))
+        stdout))))
 
 (defmacro racer--with-temporary-file (path-sym &rest body)
   "Create a temporary file, and bind its path to PATH-SYM.
@@ -126,15 +133,40 @@ Evaluate BODY, then delete the temporary file."
          (progn ,@body)
        (delete-file ,path-sym))))
 
+(defun racer--slurp (file)
+  "Return the contents of FILE as a string."
+  (with-temp-buffer
+    (insert-file-contents-literally file)
+    (buffer-string)))
+
+(defun racer--shell-command (program args)
+  "Execute PROGRAM with ARGS.
+Return a list (exit-code stdout stderr)."
+  (racer--with-temporary-file tmp-file-for-stderr
+    (let (exit-code stdout stderr)
+      ;; Create a temporary buffer for `call-process` to write stdout
+      ;; into.
+      (with-temp-buffer
+        (setq exit-code
+              (apply #'call-process program nil
+                     (list (current-buffer) tmp-file-for-stderr)
+                     nil args))
+        (setq stdout (buffer-string)))
+      (setq stderr (racer--slurp tmp-file-for-stderr))
+      (list exit-code stdout stderr))))
+
 (defun racer--call-at-point (command)
-  "Call racer command COMMAND at point of current buffer."
+  "Call racer command COMMAND at point of current buffer.
+Return a list of all the lines returned by the command."
   (racer--with-temporary-file tmp-file
     (write-region nil nil tmp-file nil 'silent)
-    (racer--call command
-                 (number-to-string (line-number-at-pos))
-                 (number-to-string (racer--current-column))
-                 (buffer-file-name)
-                 tmp-file)))
+    (s-lines
+     (s-trim-right
+      (racer--call command
+                   (number-to-string (line-number-at-pos))
+                   (number-to-string (racer--current-column))
+                   (buffer-file-name)
+                   tmp-file)))))
 
 (defun racer--read-rust-string (string)
   "Convert STRING, a rust string literal, to an elisp string."
