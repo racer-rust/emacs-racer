@@ -100,6 +100,10 @@ If nil, we will query $CARGO_HOME at runtime."
   (let ((root (locate-dominating-file (or buffer-file-name default-directory) "Cargo.toml")))
     (and root (file-truename root))))
 
+(defun racer--header (text)
+  "Helper function for adding text properties to TEXT."
+  (propertize text 'face 'racer-help-heading-face))
+
 (defun racer--call (command &rest args)
   "Call racer command COMMAND with args ARGS."
   (let ((rust-src-path (or racer-rust-src-path (getenv "RUST_SRC_PATH")))
@@ -290,8 +294,7 @@ the user to choose."
        ((and (not in-code) (s-starts-with-p "# " line))
         (let ((text (s-trim (s-chop-prefix "#" line))))
           (funcall finish-text-section)
-          (push (propertize text 'face 'racer-help-heading-face)
-                sections)))
+          (push (racer--header text) sections)))
        ;; For cross references, e.g. [`str`]: ../../std/primitive.str.html
        ;; we simply skip over them.
        ((and (not in-code) (string-match-p (rx bol "[`" (+? anything) "`]: ") line)))
