@@ -392,19 +392,30 @@ correct value."
 Commands:
 \\{racer-help-mode-map}")
 
+(defcustom racer-complete-in-comments
+  nil
+  "If non-nil, query racer for completions inside comments too."
+  :type 'boolean
+  :group 'racer)
+
 (defun racer-complete-at-point ()
   "Complete the symbol at point."
-  (unless (nth 3 (syntax-ppss)) ;; not in string
-    (let* ((bounds (bounds-of-thing-at-point 'symbol))
-           (beg (or (car bounds) (point)))
-           (end (or (cdr bounds) (point))))
-      (list beg end
-            (completion-table-dynamic #'racer-complete)
-            :annotation-function #'racer-complete--annotation
-            :company-prefix-length (racer-complete--prefix-p beg end)
-            :company-docsig #'racer-complete--docsig
-            :company-doc-buffer #'racer--describe
-            :company-location #'racer-complete--location))))
+  (let* ((ppss (syntax-ppss))
+         (in-string (nth 3 ppss))
+         (in-comment (nth 4 ppss)))
+    (when (and
+           (not in-string)
+           (or (not in-comment) racer-complete-in-comments))
+      (let* ((bounds (bounds-of-thing-at-point 'symbol))
+             (beg (or (car bounds) (point)))
+             (end (or (cdr bounds) (point))))
+        (list beg end
+              (completion-table-dynamic #'racer-complete)
+              :annotation-function #'racer-complete--annotation
+              :company-prefix-length (racer-complete--prefix-p beg end)
+              :company-docsig #'racer-complete--docsig
+              :company-doc-buffer #'racer--describe
+              :company-location #'racer-complete--location)))))
 
 (defun racer--file-and-parent (path)
   "Convert /foo/bar/baz/q.txt to baz/q.txt."
