@@ -1,5 +1,6 @@
 # v1.2 (unrelased)
 
+* Added the command `racer-debug` to help users diagnose issues.
 * We now explicitly try `~/.cargo/bin/racer` if `racer` isn't on path.
 * We no longer offer completions inside comments by default (it tends
   to be slow and rarely offers completions). See

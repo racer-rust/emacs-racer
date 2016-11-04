@@ -116,10 +116,12 @@ baz.")))
   "Ensure we extract the correct name in `racer--describe-at-point'."
   (cl-letf (((symbol-function 'racer--call)
              (lambda (&rest _)
-               (list
-                "PREFIX 36,37,n"
-                "MATCH new;new();294;11;/home/user/src/rustc-1.10.0/src/libstd/../libcollections/vec.rs;Function;pub fn new() -> Vec<T>;\"Constructs a new, empty `Vec<T>`.\""
-                "END"))))
+               (s-join
+                "\n"
+                (list
+                 "PREFIX 36,37,n"
+                 "MATCH new;new();294;11;/home/user/src/rustc-1.10.0/src/libstd/../libcollections/vec.rs;Function;pub fn new() -> Vec<T>;\"Constructs a new, empty `Vec<T>`.\""
+                 "END")))))
     (should
      (equal (plist-get (racer--describe-at-point "new") :name)
             "new"))))
@@ -128,10 +130,12 @@ baz.")))
   "If there's no docstring, racer--describe-at-point should use nil."
   (cl-letf (((symbol-function 'racer--call)
              (lambda (&rest _)
-               (list
-                "PREFIX 36,37,n"
-                "MATCH new;new();294;11;/home/user/src/rustc-1.10.0/src/libstd/../libcollections/vec.rs;Function;pub fn new() -> Vec<T>;\"\""
-                "END"))))
+               (s-join
+                "\n"
+                (list
+                 "PREFIX 36,37,n"
+                 "MATCH new;new();294;11;/home/user/src/rustc-1.10.0/src/libstd/../libcollections/vec.rs;Function;pub fn new() -> Vec<T>;\"\""
+                 "END")))))
     (should
      (null (plist-get (racer--describe-at-point "new") :docstring)))))
 
@@ -141,12 +145,14 @@ baz.")))
 Since we've moved point to the end of symbol, the other functions just happen to have the same prefix."
   (cl-letf (((symbol-function 'racer--call)
              (lambda (&rest _)
-               (list
-                "PREFIX 36,37,n"
-                "MATCH new_bar;new_bar();294;11;/home/user/src/rustc-1.10.0/src/libstd/../libcollections/vec.rs;Function;pub fn new() -> Vec<T>;\"\""
-                "MATCH new;new();294;11;/home/user/src/rustc-1.10.0/src/libstd/../libcollections/vec.rs;Function;pub fn new() -> Vec<T>;\"\""
-                "MATCH new_foo;new_foo();294;11;/home/user/src/rustc-1.10.0/src/libstd/../libcollections/vec.rs;Function;pub fn new() -> Vec<T>;\"\""
-                "END"))))
+               (s-join
+                "\n"
+                (list
+                 "PREFIX 36,37,n"
+                 "MATCH new_bar;new_bar();294;11;/home/user/src/rustc-1.10.0/src/libstd/../libcollections/vec.rs;Function;pub fn new() -> Vec<T>;\"\""
+                 "MATCH new;new();294;11;/home/user/src/rustc-1.10.0/src/libstd/../libcollections/vec.rs;Function;pub fn new() -> Vec<T>;\"\""
+                 "MATCH new_foo;new_foo();294;11;/home/user/src/rustc-1.10.0/src/libstd/../libcollections/vec.rs;Function;pub fn new() -> Vec<T>;\"\""
+                 "END")))))
     (should
      (equal (plist-get (racer--describe-at-point "new") :name)
             "new"))))
@@ -173,10 +179,12 @@ Since we've moved point to the end of symbol, the other functions just happen to
   "Smoke test for `racer-describe'."
   (cl-letf (((symbol-function 'racer--call)
              (lambda (&rest _)
-               (list
-                "PREFIX 36,37,n"
-                "MATCH foo;foo();294;11;/home/user/src/rustc-1.10.0/src/libstd/../libcollections/vec.rs;Function;pub fn new() -> Vec<T>;\"\""
-                "END"))))
+               (s-join
+                "\n"
+                (list
+                 "PREFIX 36,37,n"
+                 "MATCH foo;foo();294;11;/home/user/src/rustc-1.10.0/src/libstd/../libcollections/vec.rs;Function;pub fn new() -> Vec<T>;\"\""
+                 "END")))))
     (with-temp-buffer
       (rust-mode)
       (insert "foo();")
@@ -192,10 +200,12 @@ Otherwise, if the point is at the start of the symbol, we don't find anything."
     (cl-letf (((symbol-function 'racer--call)
                (lambda (&rest _)
                  (setq point-during-call (point))
-                 (list
-                  "PREFIX 36,37,n"
-                  "MATCH foo;foo();294;11;/home/user/src/rustc-1.10.0/src/libstd/../libcollections/vec.rs;Function;pub fn new() -> Vec<T>;\"\""
-                  "END"))))
+                 (s-join
+                  "\n"
+                  (list
+                   "PREFIX 36,37,n"
+                   "MATCH foo;foo();294;11;/home/user/src/rustc-1.10.0/src/libstd/../libcollections/vec.rs;Function;pub fn new() -> Vec<T>;\"\""
+                   "END")))))
       (with-temp-buffer
         (rust-mode)
         (insert "foo();")
@@ -204,3 +214,18 @@ Otherwise, if the point is at the start of the symbol, we don't find anything."
         ;; racer--call.
         (racer-describe))
       (should (equal point-during-call 4)))))
+
+(ert-deftest racer-debug ()
+  "Smoke test for `racer-debug'."
+  (let ((racer--prev-state
+         (list
+          :program "racer"
+          :args '("complete" "1" "2")
+          :exit-code 0
+          :stdout "PREFIX 1,2,Ok\nMATCH FOO\nEND\n"
+          :stderr ""
+          :default-directory "/"
+          :process-environment
+          '("RUST_SRC_PATH=/home/user/src/rustc-1.10.0/src"
+            "CARGO_HOME=/home/user/.cargo"))))
+    (racer-debug)))
