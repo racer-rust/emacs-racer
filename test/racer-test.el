@@ -191,6 +191,23 @@ Since we've moved point to the end of symbol, the other functions just happen to
       (goto-char (point-min))
       (racer-describe))))
 
+(ert-deftest racer-describe-test-description ()
+  "Ensure we write the correct text summary in the first line
+of the racer describe buffer."
+  (cl-letf (((symbol-function 'racer--call)
+             (lambda (&rest _)
+               "PREFIX 8,10,Ok\nMATCH Ok;Ok;253;4;/home/wilfred/src/rustc-1.10.0/src/libstd/../libcore/result.rs;EnumVariant;Ok(#[stable(feature = \"rust1\", since = \"1.0.0\")] T),;\"`Result` is a type that represents either success (`Ok`) or failure (`Err`).\n\nSee the [`std::result`](index.html) module documentation for details.\nEND\n")))
+    (with-temp-buffer
+      (rust-mode)
+      (insert "Ok")
+      (goto-char (point-min))
+      (switch-to-buffer (racer--describe "Ok"))
+      (let ((first-line (-first-item (s-lines (buffer-substring-no-properties
+                                               (point-min) (point-max))))))
+        (should
+         (equal first-line
+                "Ok is an enum variant defined in libcore/result.rs."))))))
+
 (ert-deftest racer-describe-uses-whole-symbol ()
   "Racer uses the symbol *before* point, so make sure we move point to
 the end of the current symbol.

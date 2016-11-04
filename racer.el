@@ -465,6 +465,15 @@ COLUMN number."
        'column column)
       (buffer-string))))
 
+(defun racer--kind (raw-kind)
+  "Human friendly description of a rust kind.
+For example, 'EnumKind' -> 'an enum kind'."
+  (let* ((parts (s-split-words raw-kind))
+         (description (s-join " " (--map (downcase it) parts)))
+         (a (if (string-match-p (rx bos (or "a" "e" "i" "o" "u")) description)
+                "an" "a")))
+    (format "%s %s" a description)))
+
 (defun racer--describe (name)
   "Return a *Racer Help* buffer for the function or type at point.
 If there are multiple candidates at point, use NAME to find the
@@ -478,9 +487,9 @@ correct value."
                           "Not documented.")))
         (racer--help-buf
          (format
-          "%s is a %s defined in %s.\n\n%s\n\n%s"
+          "%s is %s defined in %s.\n\n%s\n\n%s"
           name
-          (downcase (plist-get description :kind))
+          (racer--kind (plist-get description :kind))
           (racer--src-button
            (plist-get description :path)
            (plist-get description :line)
