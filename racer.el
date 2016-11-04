@@ -677,16 +677,16 @@ If PATH is not in DIRECTORY, just abbreviate it."
   (save-excursion
     (racer--goto-func-name)
     ;; If there's a variable at point:
-    (-when-let (rust-sym (symbol-at-point))
-      (let* ((comp-possibilities (racer-complete))
-             (matching-possibility
-              (--find (string= it (symbol-name rust-sym)) comp-possibilities))
-             (prototype (get-text-property 0 'ctx matching-possibility))
-             (matchtype (get-text-property 0 'matchtype matching-possibility)))
-        (if (equal matchtype "Module")
-            (racer--relative prototype)
-          ;; Syntax highlight function signatures.
-          (racer--syntax-highlight prototype))))))
+    (-when-let* ((rust-sym (symbol-at-point))
+                 (comp-possibilities (racer-complete))
+                 (matching-possibility
+                  (--find (string= it (symbol-name rust-sym)) comp-possibilities))
+                 (prototype (get-text-property 0 'ctx matching-possibility))
+                 (matchtype (get-text-property 0 'matchtype matching-possibility)))
+      (if (equal matchtype "Module")
+          (racer--relative prototype)
+        ;; Syntax highlight function signatures.
+        (racer--syntax-highlight prototype)))))
 
 (defvar racer-mode-map
   (let ((map (make-sparse-keymap)))

@@ -258,3 +258,16 @@ Otherwise, if the point is at the start of the symbol, we don't find anything."
   ;; Path is not relative and not a home directory.
   (should (equal (racer--relative "/foo/bar" "/quux")
                  "/foo/bar")))
+
+(ert-deftest racer-eldoc-no-completions ()
+  "`racer-eldoc' should handle no completions gracefully."
+  (cl-letf (((symbol-function 'racer--call)
+             (lambda (&rest _)
+               "PREFIX 4,4,\nEND\n")))
+    (with-temp-buffer
+      (rust-mode)
+      (insert "use ")
+      ;; Midle of the 'use'.
+      (goto-char 2)
+      ;; Should return nil without crashing.
+      (should (null (racer-eldoc))))))
