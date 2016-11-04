@@ -214,3 +214,18 @@ Otherwise, if the point is at the start of the symbol, we don't find anything."
         ;; racer--call.
         (racer-describe))
       (should (equal point-during-call 4)))))
+
+(ert-deftest racer-debug ()
+  "Smoke test for `racer-debug'."
+  (let ((racer--prev-state
+         (list
+          :program "racer"
+          :args '("complete" "1" "2")
+          :exit-code 0
+          :stdout "PREFIX 1,2,Ok\nMATCH FOO\nEND\n"
+          :stderr ""
+          :default-directory "/"
+          :process-environment
+          '("RUST_SRC_PATH=/home/user/src/rustc-1.10.0/src"
+            "CARGO_HOME=/home/user/.cargo"))))
+    (racer-debug)))

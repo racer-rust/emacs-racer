@@ -104,6 +104,68 @@ If nil, we will query $CARGO_HOME at runtime."
   "Helper function for adding text properties to TEXT."
   (propertize text 'face 'racer-help-heading-face))
 
+(defvar racer--prev-state nil)
+
+(defun racer-debug ()
+  "Open a buffer describing the last racer command run.
+Helps users find configuration issues, or file bugs on
+racer or racer.el."
+  (interactive)
+  (let ((buf (get-buffer-create "*racer-debug*"))
+        (inhibit-read-only t))
+    (with-current-buffer buf
+      (erase-buffer)
+      (setq buffer-read-only t)
+      (let* ((process-environment
+              (plist-get racer--prev-state :process-environment))
+             (rust-src-path-used
+              (--first (s-prefix-p "RUST_SRC_PATH=" it) process-environment))
+             (cargo-home-used
+              (--first (s-prefix-p "CARGO_HOME=" it) process-environment))
+             (stdout (plist-get racer--prev-state :stdout))
+             (stderr (plist-get racer--prev-state :stderr)))
+        (insert
+         ;; Summarise the actual command that we run.
+         (racer--header "The last racer command was:\n\n")
+         (format "$ cd %s\n"
+                 (plist-get racer--prev-state :default-directory))
+         (format "$ export %s\n" cargo-home-used)
+         (format "$ export %s\n" rust-src-path-used)
+         (format "$ %s %s\n\n"
+                 (plist-get racer--prev-state :program)
+                 (s-join " " (plist-get racer--prev-state :args)))
+
+         ;; Describe the exit code and outputs.
+         (racer--header
+          (format "This command terminated with exit code %s.\n\n"
+                  (plist-get racer--prev-state :exit-code)))
+         (if (s-blank? stdout)
+             (racer--header "No output on stdout.\n\n")
+           (format "%s\n\n%s\n\n"
+                   (racer--header "stdout:")
+                   (s-trim-right stdout)))
+         (if (s-blank? stderr)
+             (racer--header "No output on stderr.\n\n")
+           (format "%s\n\n%s\n\n"
+                   (racer--header "stderr:")
+                   (s-trim-right stderr)))
+
+         ;; Give copy-paste instructions for reproducing any errors
+         ;; the user has seen.
+         (racer--header "The temporary file will have been deleted. You should be able to reproduce\n")
+         (racer--header "the same output from racer with the following command:\n\n")
+         (format "$ %s %s %s %s\n\n" cargo-home-used rust-src-path-used
+                 (plist-get racer--prev-state :program)
+                 (s-join " "
+                         (-drop-last 1 (plist-get racer--prev-state :args))))
+
+         ;; Tell the user what to do next if they have problems.
+         (racer--header "Please report bugs ")
+         (racer--url-button "on GitHub" "https://github.com/racer-rust/emacs-racer/issues/new")
+         (racer--header "."))))
+    (switch-to-buffer buf)
+    (goto-char (point-min))))
+
 (defun racer--call (command &rest args)
   "Call racer command COMMAND with args ARGS.
 Return stdout if COMMAND exits normally, otherwise show an
@@ -153,6 +215,15 @@ Return a list (exit-code stdout stderr)."
                      nil args))
         (setq stdout (buffer-string)))
       (setq stderr (racer--slurp tmp-file-for-stderr))
+      (setq racer--prev-state
+            (list
+             :program program
+             :args args
+             :exit-code exit-code
+             :stdout stdout
+             :stderr stderr
+             :default-directory default-directory
+             :process-environment process-environment))
       (list exit-code stdout stderr))))
 
 (defun racer--call-at-point (command)
