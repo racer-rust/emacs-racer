@@ -36,6 +36,11 @@
 
 ;;; Commentary:
 
+;; Please see the readme for full documentation:
+;; https://github.com/racer-rust/emacs-racer
+
+;;; Quickstart:
+
 ;; You will need to configure Emacs to find racer:
 ;;
 ;; (setq racer-rust-src-path "<path-to-rust-srcdir>/src/")
