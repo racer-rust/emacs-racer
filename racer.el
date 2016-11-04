@@ -663,22 +663,30 @@ foo(bar, |baz); -> foo|(bar, baz);"
         ;; foo|(bar, baz);
         (goto-char start-pos)))))
 
+(defun racer--relative (path &optional directory)
+  "Return PATH relative to DIRECTORY (`default-directory' by default).
+If PATH is not in DIRECTORY, just abbreviate it."
+  (unless directory
+    (setq directory default-directory))
+  (if (s-starts-with? directory path)
+      (concat "./" (f-relative path directory))
+    (f-abbrev path)))
+
 (defun racer-eldoc ()
   "Show eldoc for context at point."
   (save-excursion
     (racer--goto-func-name)
     ;; If there's a variable at point:
     (-when-let (rust-sym (symbol-at-point))
-      (-some->>
-       ;; then look at the current completion possiblities,
-       (racer-complete)
-       ;; extract the possibility that matches this symbol exactly
-       (--filter (string= it (symbol-name rust-sym)))
-       (-first-item)
-       ;; and return the prototype that Racer gave us.
-       (get-text-property 0 'ctx)
-       ;; Finally, apply syntax highlighting for the minibuffer.
-       (racer--syntax-highlight)))))
+      (let* ((comp-possibilities (racer-complete))
+             (matching-possibility
+              (--find (string= it (symbol-name rust-sym)) comp-possibilities))
+             (prototype (get-text-property 0 'ctx matching-possibility))
+             (matchtype (get-text-property 0 'matchtype matching-possibility)))
+        (if (equal matchtype "Module")
+            (racer--relative prototype)
+          ;; Syntax highlight function signatures.
+          (racer--syntax-highlight prototype))))))
 
 (defvar racer-mode-map
   (let ((map (make-sparse-keymap)))

@@ -5,6 +5,8 @@
 * We no longer offer completions inside comments by default (it tends
   to be slow and rarely offers completions). See
   `racer-complete-in-comments`.
+* Eldoc descriptions of modules now abbreviate the path relative to
+  the project and the user's home directory.
 
 # v1.1
 

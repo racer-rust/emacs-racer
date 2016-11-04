@@ -246,3 +246,15 @@ Otherwise, if the point is at the start of the symbol, we don't find anything."
           '("RUST_SRC_PATH=/home/user/src/rustc-1.10.0/src"
             "CARGO_HOME=/home/user/.cargo"))))
     (racer-debug)))
+
+(ert-deftest racer--relative ()
+  ;; Common case: the path is relative to the directory.
+  (should (equal (racer--relative "/foo/bar" "/foo")
+                 "./bar"))
+  ;; Path is not relative, but it's a home directory.
+  (should (equal (racer--relative (f-expand "~/foo")
+                                  (f-expand "~/bar"))
+                 "~/foo"))
+  ;; Path is not relative and not a home directory.
+  (should (equal (racer--relative "/foo/bar" "/quux")
+                 "/foo/bar")))
