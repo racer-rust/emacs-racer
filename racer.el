@@ -159,8 +159,8 @@ racer or racer.el."
 
          ;; Give copy-paste instructions for reproducing any errors
          ;; the user has seen.
-         (racer--header "The temporary file will have been deleted. You should be able to reproduce\n")
-         (racer--header "the same output from racer with the following command:\n\n")
+         (racer--header
+          (s-word-wrap 60 "The temporary file will have been deleted. You should be able to reproduce the same output from racer with the following command:\n\n"))
          (format "$ %s %s %s %s\n\n" cargo-home-used rust-src-path-used
                  (plist-get racer--prev-state :program)
                  (s-join " "
