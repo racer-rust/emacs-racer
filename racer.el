@@ -1,4 +1,4 @@
-;;; racer.el --- The official Emacs package for Racer  -*- lexical-binding: t -*-
+;;; racer.el --- Support for Rust completion via racer  -*- lexical-binding: t -*-
 
 ;; Copyright (c) 2014 Phil Dawes
 
@@ -6,7 +6,7 @@
 ;; URL: https://github.com/racer-rust/emacs-racer
 ;; Version: 1.2
 ;; Package-Requires: ((emacs "24.3") (rust-mode "0.2.0") (dash "2.11.0") (s "1.10.0") (f "0.18.2"))
-;; Keywords: abbrev, convenience, matching, rust, tools
+;; Keywords: languages, abbrev, convenience, matching, rust, tools
 
 ;; This file is not part of GNU Emacs.
 
