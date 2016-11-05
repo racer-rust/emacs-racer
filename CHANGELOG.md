@@ -7,6 +7,7 @@
   `racer-complete-in-comments`.
 * Eldoc descriptions of modules now abbreviate the path relative to
   the project and the user's home directory.
+* Several improvements to markdown rendering in `racer-describe`.
 
 # v1.1
 
