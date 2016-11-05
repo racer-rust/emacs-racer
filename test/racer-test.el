@@ -109,7 +109,7 @@ foo
     (racer--propertize-docstring "[foo\nbar](baz)")
     "foo\nbar")))
 
-(ert-deftest racer--propertize-docstring-links ()
+(ert-deftest racer--propertize-docstring-footnotes ()
   "Ensure we discard footnote links."
   (should
    (equal
