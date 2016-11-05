@@ -373,65 +373,89 @@ the user to choose."
   "Indent every line in STR."
   (s-join "\n" (--map (concat "    " it) (s-lines str))))
 
-(defun racer--propertize-docstring (docstring)
-  "Replace markdown syntax in DOCSTRING with text properties."
+(defun racer--trim-newlines (str)
+  "Remove newlines from the start and end of STR."
+  (->> str
+       (s-chop-prefix "\n")
+       (s-chop-suffix "\n")))
+
+(defun racer--remove-footnote-links (str)
+  "Remove footnote links from markdown STR."
+  (->> (s-lines str)
+       (--remove (string-match-p (rx bol "[`" (+? anything) "`]: ") it))
+       (s-join "\n")
+       ;; Collapse consecutive blank lines caused by removing footnotes.
+       (s-replace "\n\n\n" "\n\n")))
+
+(defun racer--docstring-sections (docstring)
+  "Split DOCSTRING into text, code and heading sections."
   (let* ((sections nil)
          (current-section-lines nil)
-         (in-code nil)
-         ;; A helper function that highlights this text section, then
-         ;; resets the current section.
-         (finish-text-section
+         (section-type :text)
+         ;; Helper function.
+         (finish-current-section
           (lambda ()
             (when current-section-lines
-              (push (racer--propertize-all-inline-code
-                     (racer--propertize-links
-                      (s-join "\n" (nreverse current-section-lines))))
-                    sections)
-              (setq current-section-lines nil)))))
+              (let ((current-section
+                     (s-join "\n" (nreverse current-section-lines))))
+                (unless (s-blank? current-section)
+                  (push (list section-type current-section) sections))
+                (setq current-section-lines nil))))))
     (dolist (line (s-lines docstring))
       (cond
        ;; If this is a closing ```
-       ((and (s-starts-with-p "```" line) in-code)
-        ;; Apply syntax highlighting to this section.
-        (push
-         (racer--indent-block
-          (racer--syntax-highlight
-           (s-join "\n" (nreverse current-section-lines))))
-         sections)
-        ;; We're now outside the code section, update state.
-        (setq in-code nil)
-        (setq current-section-lines nil))
+       ((and (s-starts-with-p "```" line) (eq section-type :code))
+        (push line current-section-lines)
+        (funcall finish-current-section)
+        (setq section-type :text))
        ;; If this is an opening ```
        ((s-starts-with-p "```" line)
-        ;; Ensure we have a blank line in the previous text.
-        ;; This is primarily a workaround for https://github.com/phildawes/racer/issues/646
-        ;; but it's prettier too.
-        (funcall finish-text-section)
-        (when sections
-          ;; Ensure the previous section ends with a blank line.
-          (let ((previous-section (car sections)))
-            (unless (s-ends-with-p "\n" previous-section)
-              (setf (car sections)
-                    (concat previous-section "\n")))))
-        (setq in-code t))
+        (funcall finish-current-section)
+        (push line current-section-lines)
+        (setq section-type :code))
        ;; Headings
-       ((and (not in-code) (s-starts-with-p "# " line))
-        (let ((text (s-trim (s-chop-prefix "#" line))))
-          (funcall finish-text-section)
-          (push (racer--header text) sections)))
-       ;; For cross references, e.g. [`str`]: ../../std/primitive.str.html
-       ;; we simply skip over them.
-       ((and (not in-code) (string-match-p (rx bol "[`" (+? anything) "`]: ") line)))
-       ;; Skip repeated blank lines (caused by skipping cross references).
-       ((and (equal line "") (equal (-first-item current-section-lines) "")))
-       ;; Skip lines in code blocks that are rustdoc annotations, e.g. # #[allow(dead_code)]
-       ((and in-code (s-starts-with-p "# " line)))
-       ;; Otherwise, just keep appending the line to the current
-       ;; section.
+       ((and (not (eq section-type :code)) (s-starts-with-p "# " line))
+        (funcall finish-current-section)
+        (push (list :heading line) sections))
+       ;; Normal text.
        (t
         (push line current-section-lines))))
-    (funcall finish-text-section)
-    (s-join "\n" (nreverse sections))))
+    (funcall finish-current-section)
+    (nreverse sections)))
+
+(defun racer--clean-code-section (section)
+  "Given a SECTION, a markdown code block, remove
+fenced code delimiters and code annotations."
+  (->> (s-lines section)
+       (-drop 1)
+       (-drop-last 1)
+       ;; Ignore annotations like # #[allow(dead_code)]
+       (--remove (s-starts-with-p "# " it))
+       (s-join "\n")))
+
+(defun racer--propertize-docstring (docstring)
+  "Replace markdown syntax in DOCSTRING with text properties."
+  (let* ((sections (racer--docstring-sections docstring))
+         (propertized-sections
+          (--map (-let [(section-type section) it]
+                   ;; Remove trailing newlines, so we can ensure we
+                   ;; have consistent blank lines between sections.
+                   (racer--trim-newlines
+                    (cl-case section-type
+                      (:text
+                       (racer--propertize-all-inline-code
+                        (racer--propertize-links
+                         (racer--remove-footnote-links
+                          section))))
+                      (:code
+                       (racer--indent-block
+                        (racer--syntax-highlight
+                         (racer--clean-code-section section))))
+                      (:heading
+                       (racer--header
+                        (s-chop-prefix "# " section))))))
+                 sections)))
+    (s-join "\n\n" propertized-sections)))
 
 (defun racer--find-file (path line column)
   "Open PATH and move point to LINE and COLUMN."

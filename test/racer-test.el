@@ -60,8 +60,7 @@ bar.
 bar.
 
     1
-    2
-")))
+    2")))
 
 (defun racer--remove-properties (text)
   "Remove all the properties on TEXT.
@@ -90,17 +89,18 @@ struct Foo {}
   (should
    (equal
     (racer--remove-properties
-     (racer--propertize-docstring "```bar()
+     (racer--propertize-docstring "```
+bar1();
 ```
 foo
 ```
-bar();
+bar2();
 ```"))
-    "    bar();
+    "    bar1();
 
 foo
 
-    bar();")))
+    bar2();")))
 
 (ert-deftest racer--propertize-docstring-newlines ()
   "Ensure we still handle links that have been split over two lines."
@@ -113,11 +113,12 @@ foo
   "Ensure we discard footnote links."
   (should
    (equal
-    (racer--propertize-docstring "foo [`str`] bar
+    (racer--remove-properties
+     (racer--propertize-docstring "foo [`str`] bar
 
-[`str`]: ../../std/primitive.str.html
+\[`str`]: ../../std/primitive.str.html
 
-baz.")
+baz."))
     "foo str bar
 
 baz.")))
