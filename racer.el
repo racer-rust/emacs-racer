@@ -68,6 +68,8 @@
 (require 'thingatpt)
 (require 'button)
 (require 'help-mode)
+;; `cl-case' is not autoloaded on Emacs 24.4.
+(eval-when-compile (require 'cl))
 
 (defgroup racer nil
   "Support for Rust completion via racer."
