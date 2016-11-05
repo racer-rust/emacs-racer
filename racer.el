@@ -502,7 +502,7 @@ COLUMN number."
        'column column)
       (buffer-string))))
 
-(defun racer--kind (raw-kind)
+(defun racer--kind-description (raw-kind)
   "Human friendly description of a rust kind.
 For example, 'EnumKind' -> 'an enum kind'."
   (let* ((parts (s-split-words raw-kind))
@@ -521,17 +521,22 @@ correct value."
              (raw-docstring (plist-get description :docstring))
              (docstring (if raw-docstring
                             (racer--propertize-docstring raw-docstring)
-                          "Not documented.")))
+                          "Not documented."))
+             (kind (plist-get description :kind)))
         (racer--help-buf
          (format
-          "%s is %s defined in %s.\n\n%s\n\n%s"
+          "%s is %s defined in %s.\n\n%s%s"
           name
-          (racer--kind (plist-get description :kind))
+          (racer--kind-description kind)
           (racer--src-button
            (plist-get description :path)
            (plist-get description :line)
            (plist-get description :column))
-          (concat "    " (racer--syntax-highlight (plist-get description :signature)))
+          (if (equal kind "Module")
+              ;; No point showing the 'signature' of modules, which is
+              ;; just their full path.
+              ""
+            (format "    %s\n\n" (racer--syntax-highlight (plist-get description :signature))))
           docstring))))))
 
 (defun racer-describe ()

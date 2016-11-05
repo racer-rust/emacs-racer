@@ -246,7 +246,7 @@ Since we've moved point to the end of symbol, the other functions just happen to
 of the racer describe buffer."
   (cl-letf (((symbol-function 'racer--call)
              (lambda (&rest _)
-               "PREFIX 8,10,Ok\nMATCH Ok;Ok;253;4;/home/wilfred/src/rustc-1.10.0/src/libstd/../libcore/result.rs;EnumVariant;Ok(#[stable(feature = \"rust1\", since = \"1.0.0\")] T),;\"`Result` is a type that represents either success (`Ok`) or failure (`Err`).\n\nSee the [`std::result`](index.html) module documentation for details.\nEND\n")))
+               "PREFIX 8,10,Ok\nMATCH Ok;Ok;253;4;/home/user/src/rustc-1.10.0/src/libstd/../libcore/result.rs;EnumVariant;Ok(#[stable(feature = \"rust1\", since = \"1.0.0\")] T),;\"`Result` is a type that represents either success (`Ok`) or failure (`Err`).\n\nSee the [`std::result`](index.html) module documentation for details.\nEND\n")))
     (with-temp-buffer
       (rust-mode)
       (insert "Ok")
@@ -257,6 +257,23 @@ of the racer describe buffer."
         (should
          (equal first-line
                 "Ok is an enum variant defined in libcore/result.rs."))))))
+
+(ert-deftest racer-describe-module-description ()
+  "Ensure we write the correct text summary in the first line
+of the racer describe buffer."
+  (cl-letf (((symbol-function 'racer--call)
+             (lambda (&rest _)
+               "PREFIX 13,20,matches\nMATCH matches;matches;1;0;/home/user/.cargo/registry/src/github.com-1ecc6299db9ec823/matches-0.1.2/lib.rs;Module;/home/user/.cargo/registry/src/github.com-1ecc6299db9ec823/matches-0.1.2/lib.rs;\"\"\nEND\n")))
+    (with-temp-buffer
+      (rust-mode)
+      (insert "extern crate matches;")
+      (goto-char (1- (point-max)))
+      (switch-to-buffer (racer--describe "matches"))
+      (should
+       (equal (racer--remove-properties (buffer-string))
+              "matches is a module defined in matches-0.1.2/lib.rs.
+
+Not documented.")))))
 
 (ert-deftest racer-describe-uses-whole-symbol ()
   "Racer uses the symbol *before* point, so make sure we move point to
