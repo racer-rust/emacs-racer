@@ -63,6 +63,27 @@ bar.
     2
 ")))
 
+(defun racer--remove-properties (text)
+  "Remove all the properties on TEXT.
+Tests that use `equal' ignore properties, but
+this makes the ert failure descriptions clearer."
+  (with-temp-buffer
+    (insert text)
+    (buffer-substring-no-properties (point-min) (point-max))))
+
+(ert-deftest racer--propertize-docstring-code-annotations ()
+  "Ignore '# foo' lines in code sections in docstrings."
+  (should
+   (equal
+    (racer--remove-properties
+     (racer--propertize-docstring "```
+# #[allow(dead_code)]
+#[derive(Debug)]
+struct Foo {}
+```"))
+    "    #[derive(Debug)]
+    struct Foo {}")))
+
 (ert-deftest racer--propertize-docstring-newlines ()
   "Ensure we still handle links that have been split over two lines."
   (should

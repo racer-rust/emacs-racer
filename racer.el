@@ -415,6 +415,8 @@ the user to choose."
        ((and (not in-code) (string-match-p (rx bol "[`" (+? anything) "`]: ") line)))
        ;; Skip repeated blank lines (caused by skipping cross references).
        ((and (equal line "") (equal (-first-item current-section-lines) "")))
+       ;; Skip lines in code blocks that are rustdoc annotations, e.g. # #[allow(dead_code)]
+       ((and in-code (s-starts-with-p "# " line)))
        ;; Otherwise, just keep appending the line to the current
        ;; section.
        (t
