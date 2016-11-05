@@ -109,6 +109,16 @@ foo
     (racer--propertize-docstring "[foo\nbar](baz)")
     "foo\nbar")))
 
+(ert-deftest racer--propertize-docstring-link-after-attribute ()
+  "We should not confuse attributes with links."
+  (should
+   (equal
+    (racer--remove-properties
+     (racer--propertize-docstring "Result is annotated with the #[must_use] attribute,
+by the [`Write`](../../std/io/trait.Write.html) trait"))
+    "Result is annotated with the #[must_use] attribute,
+by the Write trait")))
+
 (ert-deftest racer--propertize-docstring-footnotes ()
   "Ensure we discard footnote links."
   (should

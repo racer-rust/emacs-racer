@@ -341,10 +341,10 @@ the user to choose."
         (string-match-p (rx bol "http" (? "s") "://") target))))
 
 (defun racer--propertize-links (markdown)
-  "Propertize links of in MARKDOWN."
+  "Propertize links in MARKDOWN."
   (replace-regexp-in-string
    ;; Text of the form [foo](http://example.com)
-   (rx "[" (group (+? anything)) "](" (group (+? anything)) ")")
+   (rx "[" (group (+? (not (any "]")))) "](" (group (+? anything)) ")")
    ;; For every match:
    (lambda (whole-match)
      ;; Extract link and target.
