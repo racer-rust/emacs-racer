@@ -1,4 +1,8 @@
-# v1.2 (unrelased)
+# v1.3 (unreleased)
+
+No changes yet.
+
+# v1.2
 
 * Added the command `racer-debug` to help users diagnose issues.
 * We now explicitly try `~/.cargo/bin/racer` if `racer` isn't on path.
