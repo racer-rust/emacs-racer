@@ -68,8 +68,6 @@
 (require 'thingatpt)
 (require 'button)
 (require 'help-mode)
-;; `cl-case' is not autoloaded on Emacs 24.4.
-(eval-when-compile (require 'cl))
 
 (defgroup racer nil
   "Support for Rust completion via racer."
@@ -443,7 +441,7 @@ fenced code delimiters and code annotations."
                    ;; Remove trailing newlines, so we can ensure we
                    ;; have consistent blank lines between sections.
                    (racer--trim-newlines
-                    (cl-case section-type
+                    (pcase section-type
                       (:text
                        (racer--propertize-all-inline-code
                         (racer--propertize-links
