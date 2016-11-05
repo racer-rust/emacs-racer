@@ -403,7 +403,16 @@ the user to choose."
         (setq current-section-lines nil))
        ;; If this is an opening ```
        ((s-starts-with-p "```" line)
+        ;; Ensure we have a blank line in the previous text.
+        ;; This is primarily a workaround for https://github.com/phildawes/racer/issues/646
+        ;; but it's prettier too.
         (funcall finish-text-section)
+        (when sections
+          ;; Ensure the previous section ends with a blank line.
+          (let ((previous-section (car sections)))
+            (unless (s-ends-with-p "\n" previous-section)
+              (setf (car sections)
+                    (concat previous-section "\n")))))
         (setq in-code t))
        ;; Headings
        ((and (not in-code) (s-starts-with-p "# " line))

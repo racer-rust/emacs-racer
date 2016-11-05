@@ -84,6 +84,24 @@ struct Foo {}
     "    #[derive(Debug)]
     struct Foo {}")))
 
+(ert-deftest racer--propertize-docstring-code-newlines ()
+  "Ensure we always have a blank line before a code block."
+  
+  (should
+   (equal
+    (racer--remove-properties
+     (racer--propertize-docstring "```bar()
+```
+foo
+```
+bar();
+```"))
+    "    bar();
+
+foo
+
+    bar();")))
+
 (ert-deftest racer--propertize-docstring-newlines ()
   "Ensure we still handle links that have been split over two lines."
   (should
