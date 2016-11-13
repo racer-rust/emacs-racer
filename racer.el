@@ -1,4 +1,4 @@
-;;; racer.el --- The official Emacs package for Racer  -*- lexical-binding: t -*-
+;;; racer.el --- code completion, goto-definition and docs browsing for Rust via racer  -*- lexical-binding: t -*-
 
 ;; Copyright (c) 2014 Phil Dawes
 
@@ -70,7 +70,7 @@
 (require 'help-mode)
 
 (defgroup racer nil
-  "Support for Rust completion via racer."
+  "Code completion, goto-definition and docs browsing for Rust via racer."
   :link '(url-link "https://github.com/racer-rust/emacs-racer/")
   :group 'rust-mode)
 
