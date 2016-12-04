@@ -792,7 +792,10 @@ If PATH is not in DIRECTORY, just abbreviate it."
   :keymap racer-mode-map
   (setq-local eldoc-documentation-function #'racer-eldoc)
   (set (make-local-variable 'completion-at-point-functions) nil)
-  (add-hook 'completion-at-point-functions #'racer-complete-at-point))
+  (add-hook 'completion-at-point-functions #'racer-complete-at-point)
+  (when (boundp 'xref-backend-functions)
+    (set (make-local-variable 'xref-backend-functions)
+         #'racer--xref-backend)))
 
 (define-obsolete-function-alias 'racer-turn-on-eldoc 'eldoc-mode)
 (define-obsolete-function-alias 'racer-activate 'racer-mode)
