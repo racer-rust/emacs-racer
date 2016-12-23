@@ -85,9 +85,11 @@
 (defcustom racer-rust-src-path
   (or
    (getenv "RUST_SRC_PATH")
-   "/usr/local/src/rust/src")
+   (replace-regexp-in-string "\n" ""
+			     (concat (shell-command-to-string "rustc --print sysroot") "/lib/rustlib/src/rust/src")))
   "Path to the rust source tree.
-If nil, we will query $RUST_SRC_PATH at runtime."
+If nil, we will query $RUST_SRC_PATH at runtime.
+If $RUST_SRC_PATH is not set, defaults to rustup's source install directory."
   :type 'file
   :group 'racer)
 
