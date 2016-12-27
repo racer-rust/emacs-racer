@@ -52,9 +52,11 @@ Use <kbd>M-x racer-describe</kbd> to open the help buffer.
 
 ## Installation
 
-1. Install [Racer](http://github.com/phildawes/racer):
+1. Install [Racer](http://github.com/phildawes/racer) and download the
+   source code of Rust:
 
    ```
+   $ rustup component add rust-src
    $ cargo install racer
    ```
 
@@ -65,14 +67,7 @@ Use <kbd>M-x racer-describe</kbd> to open the help buffer.
    (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
    ```
 
-2. Install racer: `M-x package-install RET racer RET`
-
-3. Download the [rust sourcecode](https://www.rust-lang.org/en-US/downloads.html),
-   and configure emacs to find your rust source directory:
-   
-   ```el
-   (setq racer-rust-src-path "<path-to-rust-srcdir>/src/")
-   ```
+3. Install the Emacs package for Racer: `M-x package-install RET racer RET`
 
 4. Configure Emacs to activate racer when rust-mode starts:
    ```el
