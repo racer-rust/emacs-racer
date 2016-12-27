@@ -15,6 +15,7 @@ This is the official Emacs package for
     - [Find Definitions](#find-definitions)
     - [Describe Functions and Types](#describe-functions-and-types)
     - [Installation](#installation)
+        - [Testing your setup](#testing-your-setup)
     - [Tests](#tests)
 
 <!-- markdown-toc end -->
@@ -84,14 +85,18 @@ Use <kbd>M-x racer-describe</kbd> to open the help buffer.
    (define-key rust-mode-map (kbd "TAB") #'company-indent-or-complete-common)
    (setq company-tooltip-align-annotations t)
    ```
-   For automatic completions, customize `company-idle-delay` and `company-minimum-prefix-length`.
+   For automatic completions, customize `company-idle-delay` and
+   `company-minimum-prefix-length`.
 
-5. Open a rust file and try typing ```use std::io::B``` and press <kbd>TAB</kbd>.
+### Testing your setup
 
-6. Place your cursor over a symbol and hit `M-.` to jump to the
-definition.
+To test **completion**: Open a rust file and try typing ```use
+std::io::B``` and press <kbd>TAB</kbd>.
 
-7. Hit `M-,` to jump back to the symbol usage location.
+To test **go to definition**: Place your cursor over a symbol and press
+`M-.` to jump to its definition.
+
+Press `M-,` to jump back to the previous cursor location.
 
 ## Tests
 
