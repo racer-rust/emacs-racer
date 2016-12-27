@@ -86,11 +86,13 @@
   (or
    (getenv "RUST_SRC_PATH")
    (when (executable-find "rustc")
-     (let ((src-path (replace-regexp-in-string "\n" ""
-					       (concat (shell-command-to-string "rustc --print sysroot") "/lib/rustlib/src/rust/src"))))
-       (if (file-exists-p src-path)
-	   src-path
-	 nil)))
+     (let* ((sysroot (s-trim-right
+                      (shell-command-to-string
+                       (format "%s --print sysroot" (executable-find "rustc")))))
+            (src-path (f-join sysroot "lib/rustlib/src/rust/src")))
+       (when (file-exists-p src-path)
+         src-path)
+       src-path))
    "/usr/local/src/rust/src")
 
   "Path to the rust source tree.
