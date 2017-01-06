@@ -98,6 +98,9 @@ To test **go to definition**: Place your cursor over a symbol and press
 
 Press `M-,` to jump back to the previous cursor location.
 
+If **it doesn't work**, try `M-x racer-debug` to see what command was
+run and what output was returned.
+
 ## Tests
 
 racer.el includes tests. To run them, you need to install
