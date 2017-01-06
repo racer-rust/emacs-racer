@@ -1,6 +1,8 @@
 # v1.3 (unreleased)
 
-No changes yet.
+* `racer-rust-src-path` is now set automatically by default.
+* New simpler installation instructions based on `rustup`.
+* Fixed an issue with racer completion in indirect buffers.
 
 # v1.2
 
