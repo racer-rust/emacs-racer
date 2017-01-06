@@ -127,6 +127,8 @@ If nil, we will query $CARGO_HOME at runtime."
 Helps users find configuration issues, or file bugs on
 racer or racer.el."
   (interactive)
+  (unless racer--prev-state
+    (user-error "Must run a racer command before debugging"))
   (let ((buf (get-buffer-create "*racer-debug*"))
         (inhibit-read-only t))
     (with-current-buffer buf
