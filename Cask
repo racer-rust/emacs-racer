@@ -6,6 +6,7 @@
 (depends-on "company")
 (depends-on "dash")
 (depends-on "s")
+(depends-on "f")
 (depends-on "rust-mode")
 
 (development
