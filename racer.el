@@ -199,7 +199,9 @@ error."
                                        process-environment)))
       (-let [(exit-code stdout _stderr)
              (racer--shell-command racer-cmd (cons command args))]
-        (unless (zerop exit-code)
+        ;; Use `equal' instead of `zero' as exit-code can be a string
+        ;; "Aborted" if racer crashes.
+        (unless (equal 0 exit-code)
           (user-error "%s exited with %s. `M-x racer-debug' for more info"
                       racer-cmd exit-code))
         stdout))))
