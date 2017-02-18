@@ -192,6 +192,9 @@ error."
         (cargo-home (or racer-cargo-home (getenv "CARGO_HOME"))))
     (when (null rust-src-path)
       (user-error "You need to set `racer-rust-src-path' or `RUST_SRC_PATH'"))
+    (unless (file-exists-p rust-src-path)
+      (user-error "No such directory: %s. Please set `racer-rust-src-path' or `RUST_SRC_PATH'"
+                  rust-src-path))
     (let ((default-directory (or (racer--cargo-project-root) default-directory))
           (process-environment (append (list
                                         (format "RUST_SRC_PATH=%s" (expand-file-name rust-src-path))
