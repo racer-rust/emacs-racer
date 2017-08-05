@@ -256,11 +256,13 @@ Return a list of all the lines returned by the command."
     (write-region nil nil tmp-file nil 'silent)
     (s-lines
      (s-trim-right
-      (racer--call command
-                   (number-to-string (line-number-at-pos))
-                   (number-to-string (racer--current-column))
-                   (buffer-file-name (buffer-base-buffer))
-                   tmp-file)))))
+      (if (region-active-p)
+          (racer--call command (buffer-substring (region-beginning) (region-end)))
+          (racer--call command
+                       (number-to-string (line-number-at-pos))
+                       (number-to-string (racer--current-column))
+                       (buffer-file-name (buffer-base-buffer))
+                       tmp-file))))))
 
 (defun racer--read-rust-string (string)
   "Convert STRING, a rust string literal, to an elisp string."
