@@ -255,13 +255,19 @@ Return a list (exit-code stdout stderr)."
 Return a list of all the lines returned by the command."
   (racer--with-temporary-file tmp-file
     (write-region nil nil tmp-file nil 'silent)
-    (s-lines
-     (s-trim-right
-      (racer--call command
-                   (number-to-string (line-number-at-pos))
-                   (number-to-string (racer--current-column))
-                   (buffer-file-name (buffer-base-buffer))
-                   tmp-file)))))
+    (let ((racer-args (list
+                       command
+                       (number-to-string (line-number-at-pos))
+                       (number-to-string (racer--current-column)))))
+      ;; If this buffer is backed by a file, pass that to racer too.
+      (-when-let (file-name (buffer-file-name (buffer-base-buffer)))
+        (setq racer-args
+              (append racer-args (list file-name))))
+
+      (setq racer-args (append racer-args (list tmp-file)))
+      (s-lines
+       (s-trim-right
+        (apply #'racer--call racer-args))))))
 
 (defun racer--read-rust-string (string)
   "Convert STRING, a rust string literal, to an elisp string."
