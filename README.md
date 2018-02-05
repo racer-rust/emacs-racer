@@ -96,7 +96,12 @@ std::io::B``` and press <kbd>TAB</kbd>.
 To test **go to definition**: Place your cursor over a symbol and press
 `M-.` to jump to its definition.
 
+Press `C-x 4 .` to jump to its definition in another window.
+
+Press `C-x 5 .` to jump to its definition in another frame.
+
 Press `M-,` to jump back to the previous cursor location.
+
 
 If **it doesn't work**, try `M-x racer-debug` to see what command was
 run and what output was returned.

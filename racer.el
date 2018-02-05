@@ -482,9 +482,9 @@ fenced code delimiters and code annotations."
                  sections)))
     (s-join "\n\n" propertized-sections)))
 
-(defun racer--find-file (path line column)
+(defun racer--find-file (path line column find-file-func)
   "Open PATH and move point to LINE and COLUMN."
-  (find-file path)
+  (funcall find-file-func path)
   (goto-char (point-min))
   (forward-line (1- line))
   (forward-char column))
@@ -493,7 +493,8 @@ fenced code delimiters and code annotations."
   (racer--find-file
    (button-get button 'path)
    (button-get button 'line)
-   (button-get button 'column)))
+   (button-get button 'column)
+   #'find-file))
 
 (define-button-type 'racer-src-button
   'action 'racer--button-go-to-src
@@ -693,10 +694,8 @@ Commands:
   (length (buffer-substring-no-properties
            (line-beginning-position) (point))))
 
-;;;###autoload
-(defun racer-find-definition ()
-  "Run the racer find-definition command and process the results."
-  (interactive)
+
+(defun racer--find-definition(find-file-func)
   (-if-let (match (--first (s-starts-with? "MATCH" it)
                            (racer--call-at-point "find-definition")))
       (-let [(_name line col file _matchtype _ctx)
@@ -705,8 +704,23 @@ Commands:
             (xref-push-marker-stack)
           (with-no-warnings
             (ring-insert find-tag-marker-ring (point-marker))))
-        (racer--find-file file (string-to-number line) (string-to-number col)))
+        (racer--find-file file (string-to-number line) (string-to-number col) find-file-func))
     (error "No definition found")))
+
+;;;###autoload
+(defun racer-find-definition ()
+  "Run the racer find-definition command and process the results."
+  (interactive (racer--find-definition #'find-file)))
+
+;;;###autoload
+(defun racer-find-definition-other-window ()
+  "Run the racer find-definition command and process the results."
+  (interactive (racer--find-definition #'find-file-other-window)))
+
+;;;###autoload
+(defun racer-find-definition-other-frame ()
+  "Run the racer find-definition command and process the results."
+  (interactive (racer--find-definition #'find-file-other-frame)))
 
 (defun racer--syntax-highlight (str)
   "Apply font-lock properties to a string STR of Rust code."
@@ -774,6 +788,8 @@ If PATH is not in DIRECTORY, just abbreviate it."
 (defvar racer-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "M-.") #'racer-find-definition)
+    (define-key map (kbd "C-x 4 .") #'racer-find-definition-other-window)
+    (define-key map (kbd "C-x 5 .") #'racer-find-definition-other-frame)
     (define-key map (kbd "M-,") #'pop-tag-mark)
     map))
 
