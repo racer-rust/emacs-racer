@@ -625,7 +625,24 @@ Commands:
               :company-prefix-length (racer-complete--prefix-p beg end)
               :company-docsig #'racer-complete--docsig
               :company-doc-buffer #'racer--describe
-              :company-location #'racer-complete--location)))))
+              :company-location #'racer-complete--location
+	      :exit-function #'racer-complete--insert-args)))))
+
+(defun racer-complete--insert-args (arg &optional _finished)
+  (let ((matchtype (get-text-property 0 'matchtype arg)))
+    (if (equal matchtype "Function")
+	(let ((ctx (get-text-property 0 'ctx arg)))
+	  (let ((arguments (racer-complete--extract-args ctx)))
+	    (insert arguments)
+	    (company-template-c-like-templatify arguments)
+	    )))))
+
+(defun racer-complete--extract-args (str)
+  "Extract arguments with parentheses from STR."
+  (if (string-match "\\(([^(]+)\\)" str)
+      (let ((args (match-string 1 str)))
+	(string-match "(\\([^,]*self,?\\).*)" args)
+	(concat "("  (s-trim-left (substring args (match-end 1) (length args)))))))
 
 (defun racer--file-and-parent (path)
   "Convert /foo/bar/baz/q.txt to baz/q.txt."
