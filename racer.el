@@ -189,8 +189,10 @@ racer or racer.el."
   "Call racer command COMMAND with args ARGS.
 Return stdout if COMMAND exits normally, otherwise show an
 error."
-  (let ((rust-src-path (or racer-rust-src-path (getenv "RUST_SRC_PATH")))
-        (cargo-home (or racer-cargo-home (getenv "CARGO_HOME"))))
+  (let ((rust-src-path (or (when racer-rust-src-path (expand-file-name racer-rust-src-path))
+                           (getenv "RUST_SRC_PATH")))
+        (cargo-home (or (when racer-cargo-home (expand-file-name racer-cargo-home))
+                        (getenv "CARGO_HOME"))))
     (when (null rust-src-path)
       (user-error "You need to set `racer-rust-src-path' or `RUST_SRC_PATH'"))
     (unless (file-exists-p rust-src-path)
@@ -198,8 +200,8 @@ error."
                   rust-src-path))
     (let ((default-directory (or (racer--cargo-project-root) default-directory))
           (process-environment (append (list
-                                        (format "RUST_SRC_PATH=%s" (expand-file-name rust-src-path))
-                                        (format "CARGO_HOME=%s" (expand-file-name cargo-home)))
+                                        (format "RUST_SRC_PATH=%s" rust-src-path)
+                                        (format "CARGO_HOME=%s" cargo-home))
                                        process-environment)))
       (-let [(exit-code stdout _stderr)
              (racer--shell-command racer-cmd (cons command args))]
