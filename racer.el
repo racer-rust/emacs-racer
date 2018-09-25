@@ -639,14 +639,18 @@ Commands:
 
 (defun racer-complete--extract-args (str)
   "Extract function arguments from STR (excluding a possible self argument)."
-  (let* ((index (string-match (rx (seq "("
+  (let* ((index (string-match (rx
+			       (or (seq "("
+					(zero-or-more (not (any ",")))
+					"self)")
+				   (seq "("
 					(zero-or-more (seq (zero-or-more (not (any "(")))
 					"self"
 					(zero-or-more space)
 					","))
 					(zero-or-more space)
 					(group (zero-or-more (not (any ")"))))
-					")")) str))
+					")"))) str))
 	 (extract (match-string 1 str)))
     (if extract
 	(format "(%s)" extract)
