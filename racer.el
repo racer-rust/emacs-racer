@@ -640,10 +640,10 @@ Commands:
 (defun racer-complete--extract-args (str)
   "Extract function arguments from STR (excluding a possible self argument)."
   (let* ((index (string-match (rx (seq "("
-					(zero-or-more (not (any "(")))
+					(zero-or-more (seq (zero-or-more (not (any "(")))
 					"self"
 					(zero-or-more space)
-					","
+					","))
 					(zero-or-more space)
 					(group (zero-or-more (not (any ")"))))
 					")")) str))
