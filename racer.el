@@ -629,20 +629,28 @@ Commands:
 	      :exit-function #'racer-complete--insert-args)))))
 
 (defun racer-complete--insert-args (arg &optional _finished)
+  "If a ARG is the name of a completed function, try to find and insert its arguments."
   (let ((matchtype (get-text-property 0 'matchtype arg)))
     (if (equal matchtype "Function")
-	(let ((ctx (get-text-property 0 'ctx arg)))
-	  (let ((arguments (racer-complete--extract-args ctx)))
-	    (insert arguments)
-	    (company-template-c-like-templatify arguments)
-	    )))))
+	(let* ((ctx (get-text-property 0 'ctx arg))
+	       (arguments (racer-complete--extract-args ctx)))
+	  (insert arguments)
+	  (company-template-c-like-templatify arguments)))))
 
 (defun racer-complete--extract-args (str)
-  "Extract arguments with parentheses from STR."
-  (if (string-match "\\(([^(]+)\\)" str)
-      (let ((args (match-string 1 str)))
-	(string-match "(\\([^,]*self,?\\).*)" args)
-	(concat "("  (s-trim-left (substring args (match-end 1) (length args)))))))
+  "Extract function arguments from STR (excluding a possible self argument)."
+  (let* ((index (string-match (rx (seq "("
+					(zero-or-more (not (any "(")))
+					"self"
+					(zero-or-more space)
+					","
+					(zero-or-more space)
+					(group (zero-or-more (not (any ")"))))
+					")")) str))
+	 (extract (match-string 1 str)))
+    (if extract
+	(format "(%s)" extract)
+      "()")))
 
 (defun racer--file-and-parent (path)
   "Convert /foo/bar/baz/q.txt to baz/q.txt."
