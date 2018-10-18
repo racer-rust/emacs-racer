@@ -53,24 +53,30 @@ Use <kbd>M-x racer-describe</kbd> to open the help buffer.
 
 ## Installation
 
-1. Install [Racer](http://github.com/phildawes/racer) and download the
+1. You will need to use a nightly version of rust.
+   If you're using rustup, run
+   ```
+   $ rustup toolchain add nightly
+   ```
+
+2. Install [Racer](http://github.com/phildawes/racer) and download the
    source code of Rust:
 
    ```
    $ rustup component add rust-src
-   $ cargo install racer
+   $ cargo +nightly install racer
    ```
 
-2. Allow Emacs to install packages from MELPA:
+3. Allow Emacs to install packages from MELPA:
 
    ```el
    (require 'package)
    (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
    ```
 
-3. Install the Emacs package for Racer: `M-x package-install RET racer RET`
+4. Install the Emacs package for Racer: `M-x package-install RET racer RET`
 
-4. Configure Emacs to activate racer when rust-mode starts:
+5. Configure Emacs to activate racer when rust-mode starts:
    ```el
    (add-hook 'rust-mode-hook #'racer-mode)
    (add-hook 'racer-mode-hook #'eldoc-mode)
