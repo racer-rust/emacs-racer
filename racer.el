@@ -611,6 +611,13 @@ Commands:
   :type 'boolean
   :group 'racer)
 
+(defcustom racer-complete-insert-argument-placeholders
+  t
+  "If non-nil, insert argument placeholders after completion.
+Note that this feature is only available when `company-mode' is installed."
+  :type 'boolean
+  :group 'racer)
+
 (defun racer-complete-at-point ()
   "Complete the symbol at point."
   (let* ((ppss (syntax-ppss))
@@ -631,14 +638,18 @@ Commands:
               :company-location #'racer-complete--location
 	      :exit-function #'racer-complete--insert-args)))))
 
+(declare-function company-template-c-like-templatify 'company-template)
+
 (defun racer-complete--insert-args (arg &optional _finished)
   "If a ARG is the name of a completed function, try to find and insert its arguments."
-  (let ((matchtype (get-text-property 0 'matchtype arg)))
-    (if (equal matchtype "Function")
-	(let* ((ctx (get-text-property 0 'ctx arg))
-	       (arguments (racer-complete--extract-args ctx)))
-	  (insert arguments)
-	  (company-template-c-like-templatify arguments)))))
+  (when (and racer-complete-insert-argument-placeholders
+             (require 'company-template nil t)
+             (equal "Function"
+                    (get-text-property 0 'matchtype arg)))
+    (let* ((ctx (get-text-property 0 'ctx arg))
+	   (arguments (racer-complete--extract-args ctx)))
+      (insert arguments)
+      (company-template-c-like-templatify arguments))))
 
 (defun racer-complete--extract-args (str)
   "Extract function arguments from STR (excluding a possible self argument)."
