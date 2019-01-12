@@ -36,6 +36,13 @@
     (racer--propertize-all-inline-code "foo `bar` [`baz`] biz")
     #("foo bar baz biz" 4 7 (face font-lock-variable-name-face) 8 11 (face font-lock-variable-name-face)))))
 
+(ert-deftest racer--propertize-all-inline-code-with-escaped-newlines ()
+  "Regression test for an escaped newline at the end of inline code."
+  (should
+   (equal
+    (racer--propertize-all-inline-code "foo `\\n`")
+    "foo \\n")))
+
 (ert-deftest racer--propertize-docstring-code ()
   "Ensure we render code blocks with indents."
   (should

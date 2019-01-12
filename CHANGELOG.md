@@ -4,6 +4,8 @@
 * New simpler installation instructions based on `rustup`.
 * Fixed an issue with racer completion in indirect buffers.
 * Fixed a crash on racer completion in buffers not backed by files.
+* Fixed a crash on backslashes and backticks when calling
+  `racer-describe`.
 
 # v1.2
 

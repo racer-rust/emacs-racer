@@ -380,7 +380,8 @@ the user to choose."
            (racer--url-button link-text link-target)
          ;; Otherwise, just discard the target.
          link-text)))
-   markdown))
+   markdown
+   t t))
 
 (defun racer--propertize-all-inline-code (markdown)
   "Given a single line MARKDOWN, replace all instances of `foo` or
@@ -388,13 +389,18 @@ the user to choose."
   (let ((highlight-group
          (lambda (whole-match)
            (racer--syntax-highlight (match-string 1 whole-match)))))
-    (->> markdown
-         (replace-regexp-in-string
-          (rx "[`" (group (+? anything)) "`]")
-          highlight-group)
-         (replace-regexp-in-string
-          (rx "`" (group (+? anything)) "`")
-          highlight-group))))
+    (setq markdown
+          (replace-regexp-in-string
+           (rx "[`" (group (+? anything)) "`]")
+           highlight-group
+           markdown
+           t t))
+    (setq markdown
+          (replace-regexp-in-string
+           (rx "`" (group (+? anything)) "`")
+           highlight-group
+           markdown
+           t t))))
 
 (defun racer--indent-block (str)
   "Indent every line in STR."
