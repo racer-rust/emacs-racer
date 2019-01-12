@@ -789,13 +789,20 @@ Note that this feature is only available when `company-mode' is installed."
         (with-no-warnings
           (font-lock-fontify-buffer)))
       (setq result (buffer-string)))
-    (when (and
-           ;; If we haven't applied any properties yet,
-           (null (text-properties-at 0 result))
-           ;; and if it's a standalone symbol, then assume it's a
-           ;; variable.
-           (string-match-p (rx bos (+ (any lower "_")) eos) str))
-      (setq result (propertize str 'face 'font-lock-variable-name-face)))
+
+    ;; If we haven't applied any text properties yet, apply some
+    ;; heuristics to try to find an appropriate colour.
+    (when (null (text-properties-at 0 result))
+      (cond
+       ;; If it's a standalone symbol, then assume it's a
+       ;; variable.
+       ((string-match-p (rx bos (+ (any lower "_")) eos) str)
+        (setq result (propertize str 'face 'font-lock-variable-name-face)))
+       ;; If it starts with a backslash, treat it as a string. See
+       ;; .lines() on strings.
+       ((string-match-p (rx bos "\\") str)
+        (setq result (propertize str 'face 'font-lock-string-face)))))
+
     result))
 
 (defun racer--goto-func-name ()
