@@ -274,15 +274,19 @@ Return a list of all the lines returned by the command."
 (defun racer--read-rust-string (string)
   "Convert STRING, a rust string literal, to an elisp string."
   (when string
-    (->> string
-         ;; Remove outer double quotes.
-         (s-chop-prefix "\"")
-         (s-chop-suffix "\"")
-         ;; Replace escaped characters.
-         (s-replace "\\n" "\n")
-         (s-replace "\\\"" "\"")
-         (s-replace "\\'" "'")
-         (s-replace "\\;" ";"))))
+    ;; Remove outer double quotes.
+    (setq string (s-chop-prefix "\"" string))
+    (setq string (s-chop-suffix "\"" string))
+    ;; Translate escape sequences.
+    (replace-regexp-in-string
+     (rx "\\" (group anything))
+     (lambda (whole-match)
+       (let ((escaped-char (match-string 1 whole-match)))
+         (if (equal escaped-char "n")
+             "\n"
+           escaped-char)))
+     string
+     t t)))
 
 (defun racer--split-parts (raw-output)
   "Given RAW-OUTPUT from racer, split on semicolons and doublequotes.

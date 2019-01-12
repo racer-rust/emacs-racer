@@ -25,6 +25,14 @@
     (racer--read-rust-string "\"foo \\n \\\" \\' \\; bar")
     "foo \n \" ' ; bar")))
 
+(ert-deftest racer--read-rust-string-backslash-n ()
+  "Regression test for a literal backslash followed by an n, not
+a newline."
+  (should
+   (equal
+    (racer--read-rust-string "\\\\n")
+    "\\n")))
+
 (ert-deftest racer--help-buf ()
   (should
    (bufferp
