@@ -655,7 +655,10 @@ Note that this feature is only available when `company-mode' is installed."
   (when (and racer-complete-insert-argument-placeholders
              (require 'company-template nil t)
              (equal "Function"
-                    (get-text-property 0 'matchtype arg)))
+                    (get-text-property 0 'matchtype arg))
+             ;; Don't add arguments if the user has already added
+             ;; some.
+             (not (eq (char-after) ?\()))
     (let* ((ctx (get-text-property 0 'ctx arg))
 	   (arguments (racer-complete--extract-args ctx)))
       (insert arguments)
