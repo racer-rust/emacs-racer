@@ -767,17 +767,20 @@ Note that this feature is only available when `company-mode' is installed."
 ;;;###autoload
 (defun racer-find-definition ()
   "Run the racer find-definition command and process the results."
-  (interactive (racer--find-definition #'find-file)))
+  (interactive)
+  (racer--find-definition #'find-file))
 
 ;;;###autoload
 (defun racer-find-definition-other-window ()
   "Run the racer find-definition command and process the results."
-  (interactive (racer--find-definition #'find-file-other-window)))
+  (interactive)
+  (racer--find-definition #'find-file-other-window))
 
 ;;;###autoload
 (defun racer-find-definition-other-frame ()
   "Run the racer find-definition command and process the results."
-  (interactive (racer--find-definition #'find-file-other-frame)))
+  (interactive)
+  (racer--find-definition #'find-file-other-frame))
 
 (defun racer--syntax-highlight (str)
   "Apply font-lock properties to a string STR of Rust code."
