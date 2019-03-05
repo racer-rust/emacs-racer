@@ -227,30 +227,55 @@ Evaluate BODY, then delete the temporary file."
     (insert-file-contents-literally file)
     (buffer-string)))
 
+(defmacro racer--with-temp-buffers (buffer-names &rest body)
+  (declare (indent 1))
+  `(let ((kill-buffer-query-functions nil))
+     ,@(-reduce-r-from (lambda (buffer body)
+                         (list
+                          `(with-temp-buffer
+                             (setq ,buffer (current-buffer))
+                             ,@body)))
+                       body
+                       buffer-names)))
+
+(defcustom racer-command-timeout nil
+  "Abandon completion if racer process fails to respond for that
+many seconds (maybe float). nil means wait indefinitely."
+  :type 'number
+  :group 'racer)
+
 (defun racer--shell-command (program args)
-  "Execute PROGRAM with ARGS.
-Return a list (exit-code stdout stderr)."
-  (racer--with-temporary-file tmp-file-for-stderr
-    (let (exit-code stdout stderr)
-      ;; Create a temporary buffer for `call-process` to write stdout
-      ;; into.
-      (with-temp-buffer
-        (setq exit-code
-              (apply #'call-process program nil
-                     (list (current-buffer) tmp-file-for-stderr)
-                     nil args))
-        (setq stdout (buffer-string)))
-      (setq stderr (racer--slurp tmp-file-for-stderr))
+  "Execute PROGRAM with ARGS. Return a list (exit-code stdout
+stderr)."
+  (racer--with-temp-buffers (stdout stderr)
+    (let (exit-code
+          stdout-result
+          stderr-result
+          (proc (make-process :name "*async-racer*"
+                              :buffer stdout
+                              :command (cons program args)
+                              :connection-type 'pipe
+                              :stderr stderr))
+          (start-time (float-time)))
+      (while
+          (and (process-live-p proc)
+               (with-local-quit
+                 (accept-process-output proc racer-command-timeout))))
+      (when (process-live-p proc) (kill-process proc))
+      (setq exit-code (process-exit-status proc)
+            stderr-result (with-current-buffer stderr (buffer-string))
+            stdout-result (with-current-buffer stdout (buffer-string)))
       (setq racer--prev-state
             (list
              :program program
              :args args
              :exit-code exit-code
-             :stdout stdout
-             :stderr stderr
+             :stdout stdout-result
+             :stderr stderr-result
              :default-directory default-directory
              :process-environment process-environment))
-      (list exit-code stdout stderr))))
+      (list exit-code stdout-result stderr-result))))
+
 
 (defun racer--call-at-point (command)
   "Call racer command COMMAND at point of current buffer.
@@ -836,13 +861,20 @@ If PATH is not in DIRECTORY, just abbreviate it."
       (concat "./" (f-relative path directory))
     (f-abbrev path)))
 
+(defcustom racer-eldoc-timeout 0.5
+  "Abandon Eldoc hinting if racer process fails to respond for
+that many seconds (maybe float)."
+  :type 'number
+  :group 'racer)
+
 (defun racer-eldoc ()
   "Show eldoc for context at point."
   (save-excursion
     (racer--goto-func-name)
     ;; If there's a variable at point:
     (-when-let* ((rust-sym (symbol-at-point))
-                 (comp-possibilities (racer-complete))
+                 (comp-possibilities (let ((racer-command-timeout racer-eldoc-timeout))
+                                       (racer-complete)))
                  (matching-possibility
                   (--find (string= it (symbol-name rust-sym)) comp-possibilities))
                  (prototype (get-text-property 0 'ctx matching-possibility))
