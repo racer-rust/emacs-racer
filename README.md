@@ -94,6 +94,12 @@ Use <kbd>M-x racer-describe</kbd> to open the help buffer.
    For automatic completions, customize `company-idle-delay` and
    `company-minimum-prefix-length`.
 
+   Racer process may be slow to respond for instance when indexing. You can
+   customize `racer-command-timeout` and `racer-eldoc-timeout` to avoid rendering
+   your Emacs session unresponsive. Eldoc timeout should be on the lower side and
+   defaults to 0.5 seconds. You can probably tweak it down on a fast machine.
+   Timeout of `nil` will wait indefinitely.
+
 ### Testing your setup
 
 To test **completion**: Open a rust file and try typing ```use
