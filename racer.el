@@ -255,8 +255,7 @@ stderr)."
                               :buffer stdout
                               :command (cons program args)
                               :connection-type 'pipe
-                              :stderr stderr))
-          (start-time (float-time)))
+                              :stderr stderr)))
       (while
           (and (process-live-p proc)
                (with-local-quit
