@@ -227,16 +227,17 @@ Evaluate BODY, then delete the temporary file."
     (insert-file-contents-literally file)
     (buffer-string)))
 
-(defmacro racer--with-temp-buffers (buffer-names &rest body)
-  (declare (indent 1))
-  `(let ((kill-buffer-query-functions nil))
-     ,@(-reduce-r-from (lambda (buffer body)
-                         (list
-                          `(with-temp-buffer
-                             (setq ,buffer (current-buffer))
-                             ,@body)))
-                       body
-                       buffer-names)))
+(defmacro racer--with-temp-buffers (stdout-sym stderr-sym &rest body)
+  (declare (indent 2) (debug (symbolp body)))
+  `(let ((kill-buffer-query-functions nil)
+         (,stdout-sym (generate-new-buffer " *racer-stdout*"))
+         (,stderr-sym (generate-new-buffer " *racer-stderr*")))
+     (unwind-protect
+         (progn ,@body)
+       (when (buffer-name ,stdout-sym)
+         (kill-buffer ,stdout-sym))
+       (when (buffer-name ,stderr-sym)
+         (kill-buffer ,stderr-sym)))))
 
 (defcustom racer-command-timeout nil
   "Abandon completion if racer process fails to respond for that
@@ -247,7 +248,7 @@ many seconds (maybe float). nil means wait indefinitely."
 (defun racer--shell-command (program args)
   "Execute PROGRAM with ARGS. Return a list (exit-code stdout
 stderr)."
-  (racer--with-temp-buffers (stdout stderr)
+  (racer--with-temp-buffers stdout stderr
     (let (exit-code
           stdout-result
           stderr-result
