@@ -353,3 +353,10 @@ Otherwise, if the point is at the start of the symbol, we don't find anything."
       (goto-char 2)
       ;; Should return nil without crashing.
       (should (null (racer-eldoc))))))
+
+(ert-deftest racer-complete--extract-args ()
+  (should
+   (equal
+    (racer-complete--extract-args
+     "pub unsafe fn alloc(layout: Layout) -> *mut u8")
+    "(layout: Layout)")))
