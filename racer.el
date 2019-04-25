@@ -68,7 +68,7 @@
 (require 'thingatpt)
 (require 'button)
 (require 'help-mode)
-(require 'pos-tip)
+(autoload 'pos-tip-show-no-propertize "pos-tip")
 
 (defgroup racer nil
   "Code completion, goto-definition and docs browsing for Rust via racer."
