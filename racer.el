@@ -348,10 +348,18 @@ split it into its constituent parts."
             :signature (nth 6 match-parts)
             :docstring (if (> (length docstring) 0) docstring nil)))))
 
+(defun racer--order-descriptions (descriptions)
+  (sort descriptions
+        (lambda (a b)
+          (let ((a (or (plist-get a :docstring) ""))
+                (b (or (plist-get b :docstring) "")))
+            (> (length a) (length b))))))
+
 (defun racer--describe-at-point (name)
-  "Get a description of the symbol at point matching NAME.
-If there are multiple possibilities with this NAME, prompt
-the user to choose."
+  "Get a descriptions of the symbols matching symbol at point and
+NAME.  If there are multiple possibilities with this NAME, prompt
+the user to choose.  Return a list of all possibilities that
+start with the user's selection."
   (let* ((output-lines (save-excursion
                          ;; Move to the end of the current symbol, to
                          ;; increase racer accuracy.
@@ -362,14 +370,20 @@ the user to choose."
                              output-lines))
          (relevant-matches (--filter (equal (plist-get it :name) name)
                                      all-matches)))
-    (if (> (length relevant-matches) 1)
-        ;; We might have multiple matches with the same name but
-        ;; different types. E.g. Vec::from.
-        (let ((signature
-               (completing-read "Multiple matches: "
-                                (--map (plist-get it :signature) relevant-matches))))
-          (--first (equal (plist-get it :signature) signature) relevant-matches))
-      (-first-item relevant-matches))))
+    (racer--order-descriptions
+     (if (> (length relevant-matches) 1)
+         ;; We might have multiple matches with the same name but
+         ;; different types. E.g. Vec::from.
+         (let ((signature
+                (completing-read "Multiple matches: "
+                                 (--map (plist-get it :signature) relevant-matches))))
+           (-filter
+            (lambda (x)
+              (let ((sig (plist-get x :signature)))
+                (equal (substring sig 0 (min (length sig) (length signature)))
+                       signature)))
+            relevant-matches))
+       relevant-matches))))
 
 (defun racer--help-buf (contents)
   "Create a *Racer Help* buffer with CONTENTS."
@@ -576,29 +590,39 @@ For example, 'EnumKind' -> 'an enum kind'."
   "Return a *Racer Help* buffer for the function or type at point.
 If there are multiple candidates at point, use NAME to find the
 correct value."
-  (let ((description (racer--describe-at-point name)))
-    (when description
-      (let* ((name (plist-get description :name))
-             (raw-docstring (plist-get description :docstring))
-             (docstring (if raw-docstring
-                            (racer--propertize-docstring raw-docstring)
-                          "Not documented."))
-             (kind (plist-get description :kind)))
-        (racer--help-buf
-         (format
-          "%s is %s defined in %s.\n\n%s%s"
-          name
-          (racer--kind-description kind)
-          (racer--src-button
-           (plist-get description :path)
-           (plist-get description :line)
-           (plist-get description :column))
-          (if (equal kind "Module")
-              ;; No point showing the 'signature' of modules, which is
-              ;; just their full path.
-              ""
-            (format "    %s\n\n" (racer--syntax-highlight (plist-get description :signature))))
-          docstring))))))
+  (let ((descriptions (racer--describe-at-point name)))
+    (when descriptions
+      (racer--help-buf
+       (let ((output "")
+             (first-iteration t))
+         (dolist (description descriptions output)
+           (unless first-iteration
+             (setf output
+                   (concat output (format "\n---------------------------------------------------------------\n"))))
+           (setf output
+                 (concat
+                  output
+                  (let* ((name (plist-get description :name))
+                         (raw-docstring (plist-get description :docstring))
+                         (docstring (if raw-docstring
+                                        (racer--propertize-docstring raw-docstring)
+                                      "Not documented."))
+                         (kind (plist-get description :kind)))
+                    (setf first-iteration nil)
+                    (format
+                     "%s is %s defined in %s.\n\n%s%s"
+                     name
+                     (racer--kind-description kind)
+                     (racer--src-button
+                      (plist-get description :path)
+                      (plist-get description :line)
+                      (plist-get description :column))
+                     (if (equal kind "Module")
+                         ;; No point showing the 'signature' of modules, which is
+                         ;; just their full path.
+                         ""
+                       (format "    %s\n\n" (racer--syntax-highlight (plist-get description :signature))))
+                     docstring))))))))))
 
 (defun racer-describe ()
   "Show a *Racer Help* buffer for the function or type at point."
