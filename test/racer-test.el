@@ -187,9 +187,9 @@ baz.")))
                  "PREFIX 36,37,n"
                  "MATCH new;new();294;11;/home/user/src/rustc-1.10.0/src/libstd/../libcollections/vec.rs;Function;pub fn new() -> Vec<T>;\"Constructs a new, empty `Vec<T>`.\""
                  "END")))))
-    (should
-     (equal (plist-get (racer--describe-at-point "new") :name)
-            "new"))))
+    (dolist (desc (racer--describe-at-point "new"))
+      (should
+       (equal (plist-get desc :name) "new")))))
 
 (ert-deftest racer--describe-at-point-nil-docstring ()
   "If there's no docstring, racer--describe-at-point should use nil."
@@ -201,8 +201,9 @@ baz.")))
                  "PREFIX 36,37,n"
                  "MATCH new;new();294;11;/home/user/src/rustc-1.10.0/src/libstd/../libcollections/vec.rs;Function;pub fn new() -> Vec<T>;\"\""
                  "END")))))
-    (should
-     (null (plist-get (racer--describe-at-point "new") :docstring)))))
+    (dolist (desc (racer--describe-at-point "new"))
+      (should
+       (null (plist-get desc :docstring))))))
 
 (ert-deftest racer--describe-at-point-shortest ()
   "If there are multiple matches, we want the shortest.
@@ -218,9 +219,9 @@ Since we've moved point to the end of symbol, the other functions just happen to
                  "MATCH new;new();294;11;/home/user/src/rustc-1.10.0/src/libstd/../libcollections/vec.rs;Function;pub fn new() -> Vec<T>;\"\""
                  "MATCH new_foo;new_foo();294;11;/home/user/src/rustc-1.10.0/src/libstd/../libcollections/vec.rs;Function;pub fn new() -> Vec<T>;\"\""
                  "END")))))
-    (should
-     (equal (plist-get (racer--describe-at-point "new") :name)
-            "new"))))
+    (dolist (desc (racer--describe-at-point "new"))
+      (should
+       (equal (plist-get desc :name) "new")))))
 
 (ert-deftest racer--syntax-highlight ()
   "Ensure we highlight code blocks and snippets correctly."
