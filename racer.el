@@ -90,7 +90,7 @@
      (let* ((sysroot (s-trim-right
                       (shell-command-to-string
                        (format "%s --print sysroot" (executable-find "rustc")))))
-            (src-path (f-join sysroot "lib/rustlib/src/rust/src")))
+            (src-path (f-join sysroot "lib/rustlib/src/rust/library")))
        (when (file-exists-p src-path)
          src-path)
        src-path))
