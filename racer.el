@@ -4,6 +4,8 @@
 
 ;; Author: Phil Dawes
 ;; URL: https://github.com/racer-rust/emacs-racer
+;; Package-Version: 20210119.225
+;; Package-Commit: f17f9d73c74ac86001a19d08735e6b966d6c5609
 ;; Version: 1.3
 ;; Package-Requires: ((emacs "25.1") (rust-mode "0.2.0") (dash "2.13.0") (s "1.10.0") (f "0.18.2") (pos-tip "0.4.6"))
 ;; Keywords: abbrev, convenience, matching, rust, tools
@@ -90,10 +92,21 @@
      (let* ((sysroot (s-trim-right
                       (shell-command-to-string
                        (format "%s --print sysroot" (executable-find "rustc")))))
-            (src-path (f-join sysroot "lib/rustlib/src/rust/src")))
-       (when (file-exists-p src-path)
-         src-path)
-       src-path))
+            (src-path (f-join sysroot "lib/rustlib/src/rust/src"))
+            (lib-path (f-join sysroot "lib/rustlib/src/rust/library")))
+       (if (and src-path (file-exists-p (f-join src-path "std")))
+           src-path
+         (if (and lib-path (file-exists-p (f-join lib-path "std")))
+             lib-path
+           ;; if none of the previous exist:
+           (message "ERROR <Racer>: RUST std library not found in the expected installation paths")
+           (message "ERROR <Racer>: Try installing RUST source by running 'rustup component add rust-src'")
+           (message "ERROR <Racer>: Paths checked:")
+           (message "ERROR <Racer>:     %s  (old path)" src-path)
+           (message "ERROR <Racer>:     %s  (new path)" lib-path)
+           nil))))
+   ;; if no user installed sources for RUST were found then return the
+   ;; default path for the RUST std library if installed system wide:
    "/usr/local/src/rust/src")
 
   "Path to the rust source tree.
