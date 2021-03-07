@@ -32,3 +32,10 @@ jobs:
       run: |
         cask build
         cask exec ert-runner
+
+  finalize:
+    runs-on: ubuntu-latest
+    if: always()
+    needs: test
+    steps:
+    - run: curl "https://coveralls.io/webhook?repo_name=$GITHUB_REPOSITORY&repo_token=${{ secrets.GITHUB_TOKEN }}" -d "payload[build_num]=$GITHUB_RUN_NUMBER&payload[status]=done"
