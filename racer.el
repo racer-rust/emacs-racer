@@ -834,14 +834,15 @@ Note that this feature is only available when `company-mode' is installed."
   (let (result)
     ;; Load all of STR in a rust-mode buffer, and use its
     ;; highlighting.
-    (with-temp-buffer
-      (insert str)
-      (delay-mode-hooks (rust-mode))
-      (if (fboundp 'font-lock-ensure)
-          (font-lock-ensure)
-        (with-no-warnings
-          (font-lock-fontify-buffer)))
-      (setq result (buffer-string)))
+    (save-match-data
+      (with-temp-buffer
+        (insert str)
+        (delay-mode-hooks (rust-mode))
+        (if (fboundp 'font-lock-ensure)
+            (font-lock-ensure)
+          (with-no-warnings
+            (font-lock-fontify-buffer)))
+        (setq result (buffer-string))))
 
     ;; If we haven't applied any text properties yet, apply some
     ;; heuristics to try to find an appropriate colour.
