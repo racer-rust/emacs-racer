@@ -221,12 +221,6 @@ Evaluate BODY, then delete the temporary file."
          (progn ,@body)
        (delete-file ,path-sym))))
 
-(defun racer--slurp (file)
-  "Return the contents of FILE as a string."
-  (with-temp-buffer
-    (insert-file-contents-literally file)
-    (buffer-string)))
-
 (defmacro racer--with-temp-buffers (stdout-sym stderr-sym &rest body)
   (declare (indent 2) (debug (symbolp body)))
   `(let ((kill-buffer-query-functions nil)
